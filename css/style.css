@@ -1,0 +1,52 @@
+html{
+	
+}
+
+body{
+	background-color: #000000;
+	text-align: center;
+	color: white;
+	align-content: center;
+	margin: 1%;
+	padding: 0px;
+	height: 100%;
+	width: 100%;
+}
+
+section {
+	position: relative;
+	align-content: center;
+	margin-top:2vh;
+	height:97vh;
+	width: 99vw;
+}
+video{
+	border: 1% ;
+	border-color: white;
+}
+canvas{
+	position: absolute;
+	z-index: 10000;
+	background-color: blue;
+	opacity: .01; 
+}
+p{
+	font-size: 20px;
+}
+.info {
+	color: blue ;
+}
+.warning {
+	color: orange ;
+}
+.error {
+	color: red ;
+}
+#logs{
+	text-align: left;
+}
+button{
+	align-self: center;
+	padding: 1%;
+	margin: 1%;
+}
