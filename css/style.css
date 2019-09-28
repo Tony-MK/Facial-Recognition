@@ -6,7 +6,6 @@ body{
 	background-color: #000000;
 	text-align: center;
 	color: white;
-	align-content: center;
 	margin: 1%;
 	padding: 0px;
 	height: 100%;
@@ -27,11 +26,10 @@ video{
 canvas{
 	position: absolute;
 	z-index: 10000;
-	background-color: blue;
-	opacity: .01; 
+	background-color: transparent;
 }
 p{
-	font-size: 20px;
+	font-size: 10px;
 }
 .info {
 	color: blue ;
@@ -42,8 +40,18 @@ p{
 .error {
 	color: red ;
 }
-#logs{
-	text-align: left;
+#statusDiv{
+	display: inline;
+}
+#statusDiv h5{
+	margin: 0.1%;
+	padding: 0.1%;
+	display: inline;
+}
+#statusDiv p{
+	margin: 0.1%;
+	padding: 0.1%;
+	display: inline;
 }
 button{
 	align-self: center;
