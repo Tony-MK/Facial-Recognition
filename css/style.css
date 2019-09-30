@@ -1,17 +1,15 @@
-html{
-	
-}
-
 body{
 	background-color: #000000;
 	text-align: center;
 	color: white;
-	margin: 1%;
-	padding: 0px;
+	margin: 2%;
+	padding: 2%;
 	height: 100%;
 	width: 100%;
 }
-
+label {
+	font-size: 14px;
+}
 section {
 	position: relative;
 	align-content: center;
@@ -43,6 +41,9 @@ p{
 #statusDiv{
 	display: inline;
 }
+#videoDiv{
+
+}
 #statusDiv h5{
 	margin: 0.1%;
 	padding: 0.1%;
@@ -57,4 +58,66 @@ button{
 	align-self: center;
 	padding: 1%;
 	margin: 1%;
+}
+
+.form-group{
+	display: inline
+}
+
+
+
+.popup {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* The actual popup */
+.popup .popuptext {
+  visibility: hidden;
+  width: 160px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 8px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -80px;
+}
+
+/* Popup arrow */
+.popup .popuptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+/* Toggle this class - hide and show the popup */
+.popup .show {
+  visibility: visible;
+  -webkit-animation: fadeIn 1s;
+  animation: fadeIn 1s;
+}
+
+/* Add animation (fade in the popup) */
+@-webkit-keyframes fadeIn {
+  from {opacity: 0;} 
+  to {opacity: 1;}
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity:1 ;}
 }

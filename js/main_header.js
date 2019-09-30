@@ -1,13 +1,17 @@
 'use strict';
 
+export { cameraIniti,recognizeToggle,snapshotButton,detectButton,video,canvas,setStatus,clearCanvas,clearStatus}
+
 
 const video = document.getElementById("inputVideo");
 const canvas = document.getElementById("overlay");
 const statusDiv = document.getElementById("statusDiv");
+const videoDiv = document.getElementById("videoDiv");
 const detectButton = document.getElementById("detectButton");
 const clearButton = document.getElementById("clearButton");
 const snapshotButton = document.getElementById("snapShotButton")
-let date = new Date();
+const recognizeToggle = document.querySelector('input[name="recognizeToggle"]')
+const controlButtons = document.getElementById("controlButtons")
 
 
 function openCamera(){
@@ -38,11 +42,10 @@ var clearStatus = () =>{
 var setStatus = (status,type) => {
 	statusDiv.innerHTML = `
 		<h4 class="${(type === undefined || typeof(type) !== "string") ? "text-info":"text-"+type}">
-			${(type === "error") ? "ERROR: "+status: status} <p class"text-info"> (${date.toTimeString().split(" ")[0]} )</p>
+			${(type === "error") ? "ERROR: "+status: status} <p class"text-info"> (${(new Date()).toTimeString().split(" ")[0]} )</p>
 		</h4>`;
 }
 
-export { cameraIniti,date,snapshotButton,detectButton,video,canvas,setStatus,clearCanvas,clearStatus}
 
 
 clearButton.onclick = () =>{ 
@@ -52,6 +55,8 @@ clearButton.onclick = () =>{
 video.onresize = () => {
 	canvas.width = video.offsetWidth;
 	canvas.height = video.offsetHeight;
+	videoDiv.height = canvas.height;
+	videoDiv.width = canvas.width
 }
 
 window.onresize = () =>{

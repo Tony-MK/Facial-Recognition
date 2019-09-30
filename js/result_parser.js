@@ -15,18 +15,17 @@ function resultParser(result){
 		}
 		return NO_VALUE_FOUND;
 	}
-
-	this.parseExpression = (index) => {
-		const expression = Object.keys(result.expressions)[index]
-		return `${expression[0].toUpperCase()+expression.slice(1,expression.length)} (${Math.floor(this.res.expressions[expression]*100)} %)`
+	this.parseExpression = () => {
+		let likelyExp = this.res.expressions.asSortedArray()[0]
+		return `${likelyExp.expression[0].toUpperCase()+likelyExp.expression.slice(1,likelyExp.expression.length)} (${Math.round(likelyExp.probability*100)} %)`
 	}
 	this.parseGender = () => {
 		if (this.res.gender == undefined){return NO_VALUE_FOUND}
-		return `${this.res.gender[0].toUpperCase()+this.res.gender.slice(1,this.res.gender.length)} (${Math.floor(this.res.genderProbability*100)} %)`
+		return `${this.res.gender[0].toUpperCase()+this.res.gender.slice(1,this.res.gender.length)} (${Math.round(this.res.genderProbability*100)} %)`
 	}
 
  	this.parseAge = () => {
-		if(typeof(this.res.age) === "number" ){return `${Math.floor(this.res.age)}`}
+		if(typeof(this.res.age) === "number" ){return `${Math.round(this.res.age)}`}
 		return NO_VALUE_FOUND;
 	}
 
