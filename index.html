@@ -7,7 +7,7 @@
 </head>
 <body class="">
 
-	<section class="col-lg-9" id="content">>
+	<section class="col-lg-12" id="content">
 		<div class="row" >
 			<div class="col-md-9">
 				<div id="videoDiv" >
@@ -16,19 +16,23 @@
 				</div>
 
 				<div id="controlButtons" class="button-group">
-					<button class="primary-btn" id="detectButton"> Start Detection</button>
-					<button class="primary-btn" id="clearButton"> Clear Detections</button>
+					<button class="btn-primary" id="detectButton"> Start Detection</button>
+					<button class="btn-primary" id="clearButton"> Clear Detections</button>
+					<button class="btn-primary" id="takePicture"> Take Photo</button>
 				</div>
 
 				<div id="statusDiv"></div>
 			</div>
 		
-			<div class="col-md-3" id="Setings">
+			<div class="col-md-3" id="settings">
 				<h4>Settings</h4>
-				<div class="form-group">
-					<input class="primary-btn" type="checkbox" name="recognizeToggle"/>
-					<label for="recognizeToggle">Recognize Faces</label>
-					
+				<div class="col-sm-12">
+					<label for="recognizeToggle form-group">Recognize Faces</label>
+					<input class="btn-primary form-group" type="checkbox" name="recognizeToggle"/>
+				</div>
+				<div class="col-sm-12">
+					<label for="addPerson">Add Person</label>
+					<button class="btn-primary form-group"  type="button" name="addPerson"><span>&plus;</span></button>
 				</div>
 			</div>
 		</div>
@@ -37,20 +41,16 @@
 	</section>
 
 	<section class="col-lg-12">
-		<span class="popuptext" id="myPopup">A Simple Popup!</span>
-		<div class="col-lg-12" id="faces">
+		<div class="col-md-12" id="faces">
 			<div class="row">
-				<div class="col-md-8">
+				<div class="col-sm-8">
 					<h2> Recognized People </h2>
-				</div>
-				<div class="col-md-4">
-					<button onclick="extractFaces()" class="primary-btn" accept="image/*"  type="file" id="addPersonButton">
-						Add Person
-					</button>
 				</div>
 			</div>
 
-			<div id="knownFaces" class="col-lg-12"></div>			
+			<div id="people" class="col-lg-12">
+				
+			</div>			
 		</div>
 
 
@@ -62,11 +62,8 @@
 </body>
 
 <script src="/js/face-api.js/dist/face-api.js" type="text/javascript"></script>
- <script type="module" src="./js/main.js"></script>
- <script type="text/javascript">
- 	function myFunction() {
-	  var popup = document.getElementById("myPopup");
-	  popup.classList.toggle("show");
-	}
- </script>
+<script src="./js/main.js" type="module"></script>
+
+
+
 </html>

@@ -1,12 +1,20 @@
 'use strict';
 
 
-import { cameraIniti,detectButton,recognizeToggle,video,canvas,setStatus,clearCanvas } from "./main_header.js"
+import { cameraIniti,detectButton,peopleDiv,controlButtons,recognizeToggle,video,canvas,setStatus,clearCanvas } from "./header.js"
 import { Person } from "./person.js"
+
+var Initializated = false;
+
+
 
 let isDetecting = false;
 let isRecongizingFaces = false;
 
+
+addPersonButton.onclick = () => {
+	addPersonButton.load
+}
 detectButton.onclick = () =>{
 	if(isDetecting){detectButton.innerHTML = "Resume Detecting Faces";isDetecting = false}
 	else{detectButton.innerHTML = "Stop Detecting Faces";isDetecting = true;runFaceDectection();}
@@ -78,7 +86,7 @@ var runFaceDectection = async () => {
 
 var extractFaces = async () => {
 	const results = await faceapi.detectAllFaces(video,MtcnnOptions)
-			///.withFaceLandmarks()
+			.withFaceLandmarks()
 			.withFaceExpressions()
 			.withFaceDescriptors()
 			.withAgeAndGender()
@@ -88,36 +96,53 @@ var extractFaces = async () => {
 async function detectFaces(){
 
 	const results = await faceapi.detectAllFaces(video,MtcnnOptions)
-			///.withFaceLandmarks()
+			.withFaceLandmarks()
 			.withFaceExpressions()
 			.withFaceDescriptors()
 			.withAgeAndGender()
-	console.log(results)
 	await renderResults(results)
+	renderPeople();
+}
+
+var calculateEuclideanDistance = (x,y) => {
+	let dist = 0;
+	for (var i = x.length - 1; i >= 0; i--) {dist += Math.pow(x[i] - y[i],2)}
+	return Math.sqrt(dist);
+}
+
+function addPersonFromResult(result){
+	let imgs = faceapi.extractFaces(video,result.detection)
+	console.table(imgs);
+	people.shift(new Person(result.personName,URL.createObjectURL(imgs[0])));
+}
+
+function recogonizeFaces(results){
+	var numberofUnknownPeople = 0
+	results.forEach((result)=> {
+		let person;
+		for(var index in people){
+			person = people[index]
+			if (person.isTheSame(result.descriptor)){
+				person.update(result);
+				result.gender,result.genderProbability = person.getGender();
+				result.age = person.age;
+				result.personName = person.name;
+				recoginzedFaces.shift(result)
+				return;
+			}
+		}
+		numberofUnknownPeople += 1;
+		result.personName = `Unknown ${numberofUnknownPeople}`
+	});
+	return results
 }
 
 function renderResults(results){
 	clearCanvas();
 	if (!validateResults(results)){return}
-	const faceMatcher = new faceapi.FaceMatcher(people.map((p)=> p.faceDescription),maxFaceLabelDistance)
-	var labels;
-	if (isRecongizingFaces){
-		 labels = results.map(fd => faceMatcher.findBestMatch(fd.descriptor))
-	}
-	faceapi.resizeResults(results, canvas).forEach((result,index) => {
-		
-
-		if (labels !== undefined && labels[index] !== undefined){
-			result["personName"] = labels[index].toString()
-		}
-		else{
-			result["personName"] = "Unknown"
-		}
-
-		displayResult(result)
-	});
+	if (isRecongizingFaces){results = recogonizeFaces(results)}
+	faceapi.resizeResults(results, canvas).forEach((result) => {displayResult(result)});
 	setStatus("Ready for Facial Dectection", "success");
-
 }
 
 
@@ -152,15 +177,19 @@ async function displayResult(result){
    	).draw(canvas)
 }
 
-var initi = () => {
+var renderPeople = () =>{
+	peopleDiv.innerHTML = ""
+	people.forEach(person => {peopleDiv.innerHTML += person.generateHTML()});
+}
+
+var initi = async () => {
 
 	modelsToLoad.forEach(async (modelName) => {
 		if (models[modelName] !== undefined){
 			if (modelName === "SSD MobileNet"){
-				
 				models[modelName](MODEL_PATH).then(()=>{
 					setStatus(`Successfully Loaded ${modelName} Model `,"success");
-					people.push(new Person("Antony","/labeled_faces/Antony.jpg"));
+					people.push(new Person("Antony","/labeled_faces/Antony.jpg",maxFaceLabelDistance))
 				})
 			}
 			else{
@@ -174,18 +203,18 @@ var initi = () => {
 			await faceapi.nets.ageGenderNet.load(MODEL_PATH).then(()=>{
 				setStatus(`Successfully Loaded ${modelName} Model `,"success");
 			})
-		}else{console.warn("Cannot load model: "+modelName)}
-
-
-		
+		}else{
+			console.warn("Cannot load model: "+modelName)
+		}
 	})
+
+
 	setStatus("Initializating Camera....", "info");
-	cameraIniti();
-	setStatus("Initalizing Facial Dectection...", "success");
-	//detectFaces();
+	await cameraIniti();
+	setStatus("Initalizing Facial Dectection...", "info");
+	await detectFaces();
 	clearCanvas();
-	controlButtons.hidden = "";
-	setStatus("Ready for Facial Dectection", "success");
+ 	setStatus("Loading Modules...", "info");
 	
 }
 
