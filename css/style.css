@@ -74,3 +74,8 @@ button{
 .people p{
 	font-size: 15px;
 }
+
+#addPerson{
+	float: left;
+	border-radius: 2px;
+}

@@ -1,20 +1,74 @@
 'use strict';
 
 
-import { cameraIniti,detectButton,peopleDiv,controlButtons,recognizeToggle,video,canvas,setStatus,clearCanvas } from "./header.js"
+import { 
+	addPersonButton,
+	canvas,
+	cameraIniti,
+	clearCanvas,
+	clearStatus,
+	clearButton,
+	controlButtons,
+	recognizeToggle,
+	peopleDiv,
+	detectButton,
+	video,
+	setStatus,
+} from "./header.js"
+
 import { Person } from "./person.js"
 
 var Initializated = false;
-
-
-
+  
 let isDetecting = false;
 let isRecongizingFaces = false;
 
-
-addPersonButton.onclick = () => {
-	addPersonButton.load
+var readFile = (file,onload) => {
+	var reader = new FileReader();
+	reader.onload = onload;
+	reader.readAsDataURL(file);
 }
+addPersonButton.change(async (event) => {
+	if (event.target.files){
+		for (var i = event.target.files.length - 1; i >= 0; i--) {
+			console.info("Reading "+event.target.files[i].name)
+			let image = document.createElement("img")
+			image.src = URL.createObjectURL(event.target.files[i]);
+			const results = await faceapi.detectAllFaces(image)
+				.withFaceLandmarks()
+				.withFaceExpressions()
+				.withFaceDescriptors()
+				.withAgeAndGender()
+
+			const faces = await faceapi.extractFaces(image,results.map((res) => res.detection))
+			for (var i = faces.length - 1; i >= 0; i--) {
+				let isCopy = false;
+				for(var personID in window.people){
+					if(window.people[personID].isTheSame(results[i].descriptor)){
+						window.people[personID].update(results[i]);
+						isCopy = true;
+						break;
+					}
+				}
+				if (isCopy){continue;}
+				let faceImage = document.createElement("img")
+				faceImage.src = faces[i].toDataURL("image/png")
+				var person = new Person(
+						"Unknown Person",
+						faceImage,
+						undefined,
+						results[i].age,
+						results[i].descriptor,
+						results[i].expressions,
+						results[i].gender,
+						results[i].genderProbability
+					)
+				people[person.id] = person
+			}
+		}
+	}
+	renderPeople()
+});
 detectButton.onclick = () =>{
 	if(isDetecting){detectButton.innerHTML = "Resume Detecting Faces";isDetecting = false}
 	else{detectButton.innerHTML = "Stop Detecting Faces";isDetecting = true;runFaceDectection();}
@@ -53,10 +107,7 @@ const mtcnnForwardParams = {
 }
  
 const MtcnnOptions = new faceapi.MtcnnOptions(DEFAULT_MTCNN_OPTIONS);
-
-
 var FacialExperssionConfindenceLimit = 0.8
-
 var models = {
 	"SSD MobileNet": faceapi.loadSsdMobilenetv1Model,
 	"Face Landmarks": faceapi.loadFaceLandmarkModel,
@@ -75,8 +126,11 @@ var modelsToLoad = [
 	"Face Recognition",
 	"MCTNN"
 ]
-
-var people = []
+window.changeName = (id)=>{
+	window.people[id].name = $(`#${id}`).value
+	console.log(`Changed ${id} person name to ${window.people[id].name}`)
+}
+window.people = {}
 // Maxiuim Euclidean Distance between two different face labels
 var maxFaceLabelDistance = 0.6;
 
@@ -110,29 +164,20 @@ var calculateEuclideanDistance = (x,y) => {
 	return Math.sqrt(dist);
 }
 
-function addPersonFromResult(result){
-	let imgs = faceapi.extractFaces(video,result.detection)
-	console.table(imgs);
-	people.shift(new Person(result.personName,URL.createObjectURL(imgs[0])));
-}
 
 function recogonizeFaces(results){
-	var numberofUnknownPeople = 0
 	results.forEach((result)=> {
 		let person;
-		for(var index in people){
-			person = people[index]
+		for(var index in window.people){
+			person = window.people[index]
 			if (person.isTheSame(result.descriptor)){
 				person.update(result);
 				result.gender,result.genderProbability = person.getGender();
 				result.age = person.age;
 				result.personName = person.name;
-				recoginzedFaces.shift(result)
 				return;
 			}
 		}
-		numberofUnknownPeople += 1;
-		result.personName = `Unknown ${numberofUnknownPeople}`
 	});
 	return results
 }
@@ -158,6 +203,7 @@ function validateResults(results){
 }
 
 
+
 async function displayResult(result){
 	// Drawing Box
 	await new faceapi.draw.DrawBox(result.detection.box,{color:"blue"}).draw(canvas);
@@ -172,14 +218,16 @@ async function displayResult(result){
 	// Rendering Detection Details
 	let rParser = new resultParser(result)
    	await new faceapi.draw.DrawTextField(
-   		[`${result.personName} ${rParser.parseAge()} year old ${rParser.parseExpression()} ${rParser.parseGender()} and born on ${rParser.parseBirthDate()}`],
+   		[`${result.personName === undefined ? "":result.personName} ${rParser.parseAge()} year old ${rParser.parseExpression()} ${rParser.parseGender()} and born on ${rParser.parseBirthDate()}`],
    	result.detection.box.bottomLeft
    	).draw(canvas)
 }
 
 var renderPeople = () =>{
 	peopleDiv.innerHTML = ""
-	people.forEach(person => {peopleDiv.innerHTML += person.generateHTML()});
+	for(var personID in people){
+		peopleDiv.innerHTML += people[personID].generateHTML()
+	}
 }
 
 var initi = async () => {
@@ -189,7 +237,6 @@ var initi = async () => {
 			if (modelName === "SSD MobileNet"){
 				models[modelName](MODEL_PATH).then(()=>{
 					setStatus(`Successfully Loaded ${modelName} Model `,"success");
-					people.push(new Person("Antony","/labeled_faces/Antony.jpg",maxFaceLabelDistance))
 				})
 			}
 			else{

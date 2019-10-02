@@ -29,7 +29,7 @@ class Person {
 
 	updateDescriptor = (newDescriptor) => {
 		if (this.descriptor === undefined){this.descriptor = newDescriptor;return}
-		descriptor.forEach((val,i) => {this.descriptor[i] = (this.newDescriptor[i]+val)/2})
+		this.descriptor.forEach((val,i) => {this.descriptor[i] = (newDescriptor[i]+val)/2})
 	}
 
 	updateExpressions = (newExpressions) => {
@@ -55,8 +55,8 @@ class Person {
 	}
 
 	getGender = () => { 
-		if(this.genders[MALE] < this.genders[FEMALE]){return FEMALE, this.gender[FEMALE]}
-		if(this.genders[MALE] > this.genders[FEMALE]){return MALE, this.gender[MALE]}
+		if(this.genders[MALE] < this.genders[FEMALE]){return FEMALE, this.genders[FEMALE]}
+		if(this.genders[MALE] > this.genders[FEMALE]){return MALE, this.genders[MALE]}
 		return NO_VALUE_FOUND, 100
 
 	}
@@ -84,9 +84,9 @@ class Person {
 
 	generateHTML = () => {
 		return `<div class="col-sm-3"> 
-			 	<img class="img-fluid" src="${this.image.src}"> <img/>
-			 	<p class="">${this.name}</div> 
-			 </div>`
+				 	<img class="img-fluid" src="${this.image.src}"/>
+				 	<input type="text onkeydown=window.changeName('${this.id}') id="${this.id}" value="${this.name}" class="person_name"/>
+				 </div>`
 	}
 
 	async update(result){
@@ -105,16 +105,11 @@ class Person {
 		if (result){
 			console.log("Found Labeled Face for "+this.name)
 			this.updateDescriptor(result.descriptor)
-			return;
+			return result;
 		}
 		throw new Error(`No Face Dectected for ${this.name}`) 
 	}
 
-	async setImage(imageUrl){
-		const image = await faceapi.fetchImage(imageUrl);
-		this.generateDescription(image);
-		this.image = image
-	}
 
 	setMaxEuclideanDistance = (distance) => {
 		switch(typeof(distance)){
@@ -129,19 +124,31 @@ class Person {
 				break;
 		}
 	}
-	constructor(name,imageUrl,maxEuclideanDistance,age,descriptor,expressions,gender,genderProbability){
+	constructor(name,image,maxEuclideanDistance,age,descriptor,expressions,gender,genderProbability){
 		this.name = name;
+		this.id = create_UUID()
+		this.image = image
 		this.setMaxEuclideanDistance(maxEuclideanDistance);
-		this.setImage(imageUrl);
-
 		this.age = age;
 		this.descriptor = descriptor;
+		if (this.descriptor == undefined){this.generateDescription(this.image);}
+
 		this.expressions = expressions;
 		this.genders = {"male":0,"female":0};
 		if (typeof(genderProbability) === "number"){
 			this.genders[gender] = genderProbability;
 		}
 	}
+}
+
+function create_UUID(){
+    var dt = new Date().getTime();
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (dt + Math.random()*16)%16 | 0;
+        dt = Math.floor(dt/16);
+        return (c=='x' ? r :(r&0x3|0x8)).toString(16);
+    });
+    return uuid;
 }
 
 

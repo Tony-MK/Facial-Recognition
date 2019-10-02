@@ -10,7 +10,6 @@ export {
 	controlButtons,
 	recognizeToggle,
 	peopleDiv,
-	snapshotButton,
 	detectButton,
 	video,
 	setStatus,
@@ -23,7 +22,7 @@ const statusDiv = document.getElementById("statusDiv");
 const videoDiv = document.getElementById("videoDiv");
 const detectButton = document.getElementById("detectButton");
 const clearButton = document.getElementById("clearButton");
-const addPersonButton = document.getElementById("addPerson")
+const addPersonButton = $("#addPerson")
 const recognizeToggle = document.querySelector('input[name="recognizeToggle"]')
 const peopleDiv = document.getElementById('people')
 const controlButtons = document.getElementById("controlButtons")
