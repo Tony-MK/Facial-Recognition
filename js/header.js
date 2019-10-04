@@ -3,16 +3,24 @@
 export {
 	addPersonButton,
 	canvas,
+	calculateEuclideanDistance,
 	cameraIniti,
 	clearCanvas,
 	clearStatus,
 	clearButton,
 	controlButtons,
-	recognizeToggle,
 	peopleDiv,
 	detectButton,
+	detectionView,
 	video,
 	setStatus,
+	imageInput
+}
+
+var calculateEuclideanDistance = (x,y) => {
+	let dist = 0;
+	for (var i = x.length - 1; i >= 0; i--) {dist += Math.pow(x[i] - y[i],2)}
+	return Math.sqrt(dist);
 }
 
 
@@ -20,22 +28,63 @@ const video = document.getElementById("inputVideo");
 const canvas = document.getElementById("overlay");
 const statusDiv = document.getElementById("statusDiv");
 const videoDiv = document.getElementById("videoDiv");
-const detectButton = document.getElementById("detectButton");
-const clearButton = document.getElementById("clearButton");
-const addPersonButton = $("#addPerson")
-const recognizeToggle = document.querySelector('input[name="recognizeToggle"]')
-const peopleDiv = document.getElementById('people')
+
 const controlButtons = document.getElementById("controlButtons")
+const detectButton = document.getElementById("startButton");
+const detectionView = document.getElementById("detectionView");
+
+const clearButton = document.getElementById("clearButton"); clearButton.onclick = () =>{clearCanvas();}
+const addPersonButton = document.getElementById("addPerson")
+const imageInput = $("#imageInput")
+
+const peopleDiv = document.getElementById('recognizedPeople')
+
+
+var buttons = []
+var activePanel = "detection";
+var panelButtons = ["detection","recongition","settings"]
+
+var enablePanel = (panelName) => {
+	disablePanel(activePanel);
+	document.getElementById(panelName+"Button").setAttribute("class","active")
+	document.getElementById(panelName+"Panel").removeAttribute("hidden")
+	activePanel = panelName;
+}
+
+var disablePanel = (panelName) => {
+	document.getElementById(panelName+"Button").removeAttribute("class");
+	document.getElementById(panelName+"Panel").setAttribute("hidden", "true");
+}
+
+enablePanel(activePanel)
+panelButtons.forEach((id,index)=> {
+	document.getElementById(id+"Button").onclick = (e) => {enablePanel(e.srcElement.parentNode.id.slice(0,e.srcElement.parentNode.id.indexOf("Button")));}
+})
+
+
+video.onresize = () => {
+	canvas.width = video.offsetWidth;
+	canvas.height = video.offsetHeight;
+	videoDiv.height = canvas.height;
+	videoDiv.width = canvas.width
+}
+
+window.onresize = () =>{
+	video.onresize();
+}
+
+
 
 
 function openCamera(){
-	if (navigator.vendor.indexOf("Google") > -1){
+	if (navigator.getUserMedia){
 		navigator.getUserMedia({video:{}},s=>{video.srcObject = s},(err) =>{console.error(err)})
-	}else if (navigator.userAgent.indexOf("Mozilla/") == 0){
-		navigator.mozGetUserMedia({video:{}},s=>{video.srcObject=s},(err) =>{console.error(err)})
+	}else if (navigator.mediaDevices.getUserMedia){
+		navigator.mediaDevices.getUserMedia({video:{}},s=>{video.srcObject=s},(err) =>{console.error(err)})
 	}else{
 		document.getElementById("content").innerHTML = `<h2 class="error">Navigator Error </h2><p>Failed to get user media ${navigator.vendor}</p>`;
-		console.error(`${navigator.vendor.indexOf("Google")} is not found as a vendor`)
+		console.info(navigator)
+		throw new Error(`Failed to get user media devices from navigator.`);
 	}
 }
 
@@ -53,28 +102,17 @@ var clearStatus = () =>{
 	statusDiv.innerHTML = ""
 }
 
-var setStatus = (status,type) => {
-	statusDiv.innerHTML = `
-		<h4 class="${(type === undefined || typeof(type) !== "string") ? "text-info":"text-"+type}">
-			${(type === "error") ? "ERROR: "+status: status} <p class"text-info"> (${(new Date()).toTimeString().split(" ")[0]} )</p>
-		</h4>`;
+var setStatus = (status,type,elem) => {
+	if (elem === undefined){
+		statusDiv.innerHTML = `
+			<p> ${(new Date()).toTimeString().split(" ")[0]} : 
+				<b class="${(type === undefined || typeof(type) !== "string") ? "text-info":"text-"+type}">${(type === "error") ? "ERROR: "+status: status}</b>
+			</p>`;
+	}
 }
 
 
 
-clearButton.onclick = () =>{ 
-	clearCanvas();
-}
 
-video.onresize = () => {
-	canvas.width = video.offsetWidth;
-	canvas.height = video.offsetHeight;
-	videoDiv.height = canvas.height;
-	videoDiv.width = canvas.width
-}
-
-window.onresize = () =>{
-	video.onresize();
-}
 
 

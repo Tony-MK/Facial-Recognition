@@ -11,7 +11,7 @@ function resultParser(result){
 		if (typeof(this.res.age) === "number"){
 			var birthDate = new Date(Date.now()-(this.res.age*MILLISECONDS_IN_YEAR))
 			birthDate = birthDate.toDateString().split(" ")
-			return `${birthDate[1]} of ${birthDate[3]}`
+			return `${birthDate[1]} ${birthDate[3]}`
 		}
 		return NO_VALUE_FOUND;
 	}

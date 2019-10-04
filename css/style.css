@@ -1,81 +1,130 @@
 body{
-	background-color: #000000;
+	background-color:  #1c1e1f;
 	text-align: center;
+	align-items: center;
 	color: white;
-	margin: 2%;
-	padding: 2%;
-	height: 100%;
-	width: 100%;
-}
-label {
-	font-size: 14px;
-}
-section {
-	position: relative;
-	align-content: center;
-	margin-top:2vh;
-	height:97vh;
-	width: 99vw;
-}
-video{
-	border: 1% ;
-	border-color: white;
+	margin: 0px;
+	padding: 0px;
+	max-height: 100vh;
+	max-width: 100vw;
 }
 canvas{
 	position: absolute;
 	z-index: 10000;
 	background-color: transparent;
 }
-p{
-	font-size: 10px;
+nav {
+	border-bottom: 1px solid black;
+	background-color: #2a2c2e;
+	font-size: 70%;
+	width: 100vw;
+	max-height:5vh;
 }
-.info {
-	color: blue ;
-}
-.warning {
-	color: orange ;
-}
-.error {
-	color: red ;
-}
-#statusDiv{
-	display: inline;
-}
-#videoDiv{
 
-}
-#statusDiv h5{
-	margin: 0.1%;
-	padding: 0.1%;
-	display: inline;
-}
-#statusDiv p{
-	margin: 0.1%;
-	padding: 0.1%;
-	display: inline;
+section {
+	width: 100vw;
 }
 button{
-	align-self: center;
-	padding: 1%;
-	margin: 1%;
+	padding: 2%;
+	margin: 2%;
+	display: inline;
+	font-size: 12px;
 }
 
-.form-group{
-	display: inline
+#statusDiv{
+	display: inline;
+	text-align: center;
+}
+#statusDiv p {
+	padding: 0px;
+	margin: 0px;
 }
 
+.controlPanel{
+	margin-top: 30px;
+	background-color: #2a2c2e;
+	padding: 30px;
+	margin-left: 30px;
+	align-content: center;
+	align-items: center;
+	text-align: center;
+	border: 1px solid white;
+}
+
+.form-group label{
+	font-size: 14px;
+	display: inline-block;
+	margin-right:5px;
+}
+input {
+	text-align: center;
+}
+#videoDiv {
+	padding-top: 30px;
+	margin-left: 30px;
+}
+#addPerson{
+	border-radius: 2px;
+	border: 1px solid white;
+	background-color: lightgray;
+	color: black;
+	text-align: center;
+}
+#addPerson span{
+	transition-duration: 0.5s;
+}
+
+#addPerson span:hover{
+	cursor: pointer;
+	transform: scale(1.05);
+}
 
 .person{
 	padding-top: 5px;
 	border-style: solid;
 	border-color: white;
 	border-width: 2px;
+	font-size: 2
+}
+.person p{
+	padding: 0px;
+	margin: 0px;
+
 }
 .people p{
 	font-size: 15px;
 }
+.active {
+	border-bottom: 1px solid lightblue;
+}
+.controlPanel ul {
+	align-items: center;
+	padding-bottom: 10px;
+}
+.controlPanel {
+	margin-left: 2vw;
+}
+.controlPanel li{
+	margin: 10px;
+}
+.controlPanel li a{
+	margin: 10px;
+	padding: 10px;
+	font-size: 15px;
+	transition-duration: 1s;
+}
 
-#addPerson{
-	float: left;
-	border-radius: 2px;
+.controlPanel li a:hover {
+	cursor: pointer;
+	font-size: 18px;
+}
+.panel{
+	width: 100%
+	font-size: 8px;
+	text-align: left;
+}
+
+.panel p{
+	font-size: 12px;
+	text-align: center;
 }
