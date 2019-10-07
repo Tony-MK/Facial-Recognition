@@ -14,15 +14,18 @@ canvas{
 	background-color: transparent;
 }
 nav {
-	border-bottom: 1px solid black;
+	border-bottom: 2px solid black;
 	background-color: #2a2c2e;
 	font-size: 70%;
 	width: 100vw;
 	max-height:5vh;
 }
-
 section {
 	width: 100vw;
+}
+video{
+	width: 45vw;
+	max-width: 48vw;
 }
 button{
 	padding: 2%;
@@ -30,6 +33,61 @@ button{
 	display: inline;
 	font-size: 12px;
 }
+
+#startUpView {
+	width: 100vw;
+	height: 100vh;
+	padding: 5%;
+	background-color: white;
+	color: black;
+}
+#startUpView span{
+	padding-top:10vh;
+	display: block;
+}
+#startUpView img{
+	min-height: 10vh;
+	min-width: 10vw; 
+}
+#startUpView .col-sm-6{
+	cursor: pointer;
+	transition-duration: 2s;
+	font-size:20px;
+	margin-top: 20vh ;
+	padding: 10vh 10vw 10vh 10vw;
+}
+
+#startUpView .col-sm-6:hover{
+	background-color: #1c1e1f;
+	color: white;
+}
+
+.tip{
+	position:  relative;
+	display: inline-block;
+}
+
+.tip span{
+	visibility: hidden;
+	width: 120px;
+	background-color: black;
+	color: #fff;
+	text-align: center;
+	border-radius: 6px;
+	padding: 5px;
+	font-size: 10px;
+	position: absolute;
+	z-index: 1;
+}
+
+.tip img{
+	margin: 0px;
+	padding: 0px;
+}
+.tip:hover span{
+	visibility: visible;
+}
+
 
 #statusDiv{
 	display: inline;
@@ -40,91 +98,85 @@ button{
 	margin: 0px;
 }
 
-.controlPanel{
-	margin-top: 30px;
-	background-color: #2a2c2e;
-	padding: 30px;
-	margin-left: 30px;
-	align-content: center;
-	align-items: center;
-	text-align: center;
-	border: 1px solid white;
-}
 
 .form-group label{
 	font-size: 14px;
 	display: inline-block;
 	margin-right:5px;
 }
-input {
-	text-align: center;
-}
+
 #videoDiv {
 	padding-top: 30px;
 	margin-left: 30px;
+	width: 45vw;
+	max-width: 48vw;
 }
-#addPerson{
-	border-radius: 2px;
-	border: 1px solid white;
-	background-color: lightgray;
-	color: black;
-	text-align: center;
-}
-#addPerson span{
-	transition-duration: 0.5s;
-}
-
-#addPerson span:hover{
+#controlButtons img:hover{
 	cursor: pointer;
-	transform: scale(1.05);
 }
 
 .person{
 	padding-top: 5px;
-	border-style: solid;
-	border-color: white;
-	border-width: 2px;
-	font-size: 2
+	border-bottom: 3px solid white;
+	border-top: 1px solid white;
+	border-right: 1px solid white;
+	border-left: 1px solid white;
+	font-size: 10px;
+	text-align: left;
+}
+.person b{
+	margin: 2px;
+	font-size: 7px;
 }
 .person p{
-	padding: 0px;
-	margin: 0px;
+	padding:2px;
+	margin:2px;
+}
+.person input{
+	margin:5px 0px 0px 2px;
+	width: 100%;
+	color: white;
+	text-align: center;
+	background-color: transparent;
+	border-bottom: 1px solid white;
+}
 
-}
-.people p{
-	font-size: 15px;
-}
-.active {
-	border-bottom: 1px solid lightblue;
-}
-.controlPanel ul {
+.controlPanel{
+	width: 45vw;
+	max-width: 48vw;
+	font-size: 20px;
+	padding: 10px 20px 10px 20px;
+	margin: 30px 0px 0px 2vw;
+	background-color: #2a2c2e;
+	align-content: center;
 	align-items: center;
-	padding-bottom: 10px;
-}
-.controlPanel {
-	margin-left: 2vw;
-}
-.controlPanel li{
-	margin: 10px;
-}
-.controlPanel li a{
-	margin: 10px;
-	padding: 10px;
-	font-size: 15px;
-	transition-duration: 1s;
+	text-align: center;
+	border: 1px solid white;
 }
 
-.controlPanel li a:hover {
+.controlPanel li {
+	margin: 10px 0px 10px 0px;
+	padding: 0px 0px 0px 10px;
+	font-size: 15px;
+	text-align: center;
+	transition-duration: 0.6s;
+}
+
+.controlPanel a {
+	margin: 0px;
+	padding-right:1px;
+}
+.controlPanel li:hover {
 	cursor: pointer;
 	font-size: 18px;
 }
+
+.active {
+	border-bottom: 1px solid lightblue;
+}
+
 .panel{
 	width: 100%
 	font-size: 8px;
 	text-align: left;
-}
-
-.panel p{
-	font-size: 12px;
-	text-align: center;
 }

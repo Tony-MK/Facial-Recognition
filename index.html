@@ -8,103 +8,146 @@
 
 
 <body>
-	<nav class="col-lg-12">
+	
+	<div id="startUpView">
+		<div class="col-lg-12">
+			<h2> Were to get a Video to Analyze </h2>
+		</div>
 		<div class="row">
-			<div class="col-md-7">
-				<a >Facy</a>
+			<div style="border-right:1px solid #000;" class="col-sm-6" id="videoSelect">
+				<img class="img-fluid" src="icons8/video-playlist-50.png" alt="add-image">
+				<span> Video Clip </span>
 			</div>
-			<div class="col-md-5" id="statusDiv">
-				
+			<div class="col-sm-6" id="webcamSelect">
+				<img class="img-fluid" src="icons8/camera-50.png" alt="add-image">
+				<span> Live Camera Feed </span>
 			</div>
 		</div>
-	</nav>
+	</div> 
 	
 	
 
-	<section class="row">
-		<div id="videoDiv">
-			<canvas id="overlay"></canvas>
-			<video  class="img-fluid" id="inputVideo" autoplay muted></video>
-			<div id="controlButtons row">
-				<button class="btn-success" id="startButton"> Start Detection</button>
-				<button class="btn-primary" id="clearButton"> Clear Detections</button>
+	<section hidden>
+		<nav class="col-lg-12">
+			<div class="row">
+				<div class="col-md-7">
+					<a >Facy</a>
+				</div>
+				<div class="col-md-5" id="statusDiv">
+					
+				</div>
 			</div>
-		</div>
-		<div class="controlPanel">
-			<div>
-				<ul class="nav ">
-					 <li id="detectionButton">
-						<a >Facial Detection</a>
-					</li>
-					<li id="recongitionButton">
-						<a >Facial Recongition</a>
-					</li>
-					<li id="settingsButton">
-						<a >App Settings</a>
-					</li>
-				</ul>
-			</div>
-			
+		</nav>
 
-			<div class="panel" hidden="true" id="detectionPanel">
-				<p> The faces decteted since the begining of the video stream</p>
-				<hr>
-				<div id="detectionView"></div>
-			</div>
+		<div class="row">
+			<div id="videoDiv">
+				<canvas id="overlay"></canvas>
+				<video class="img-fluid" id="playback" autoplay="true" controls></video>
+				<div id="controlButtons">
+					<div class="tip" id="startButton">
+						<img class="img-fluid" src="icons8/play-50.png" alt="add-image">
+						<span> Start Detecting Faces </span>
+					</div>
 
+					<div hidden="true" class="tip" id="pauseButton">
+						<img class="img-fluid" src="icons8/pause-50.png" alt="add-image">
+						<span> Pause Detecting Faces </span>
+					</div>
 
-			<div class="panel" hidden="true" id="recongitionPanel">
-				<p>The indivual people which the appilcation's alogthrims can be recongize</p>
-				<hr>
-				<div id="addPerson">
-					<span>
+					<div class="tip" id="clearButton">
+						<img class="img-fluid" src="icons8/refresh-50.png" alt="add-image">
+						<span> Reset Dectections </span>
+					</div>
+
+					<div class="tip" id="videoUpload">
+						<img class="img-fluid" src="icons8/video-playlist-50.png" alt="add-image">
+						<input type="file" accept="video/*" hidden="" id="videoInput">
+						<span> Upload Video To Analyze </span>
+					</div>
+
+					<div class="tip" id="webCamButton">
+						<img class="img-fluid" src="icons8/camera-50.png" alt="add-image">
+						<span> Switch to Live Camera Feed </span>
+					</div>
+
+					<div class="tip" id="addPerson">
 						<img class="img-fluid" src="icons8/add-male-user-50.png" alt="add-image">
-						<caption>
-							Add Person
-						</caption>
-						<input type="file" style="display: none;" id="imageInput">
-					</span>
+						<input type="file" accept="image/*" hidden="" id="imageInput">
+						<span> Add a Person to Recongize </span>
+					</div>
 				</div>
-				<hr>
-				
-				<div id="recognizedPeople"></div>	
 			</div>
+			<div class="controlPanel">
+				<div>
+					<ul class="nav row">
+						 <li id="detectionButton">
+							<a >Facial Detection</a>
+							<div class="tip">
+								<img class="img-fluid" src="./icons8/help-25.png"></img>
+								<span>
+									The indivual people which the alogthrims can be recongize
+								</span>
+							</div>
 
-			<div class="panel" hidden="true" id="settingsPanel">
-				<p> Configure the application's  settings </p>
-				<hr>
-				<div class="form-group">
-					<label for="recognizeSetting" > Extract Faces </label>
-					<input class="btn-primary" checked type="checkbox" name="extractSetting"/>
-				</div>
-				<div class="form-group">
-					<label for="recognizeSetting" > Recognize People </label>
-					<input class="btn-primary" checked type="checkbox" name="recognizeSetting"/>
-				</div>
-				<div class="form-group">
-					<label for="recognizeSetting" > Render on Video </label>
-					<input class="btn-primary" checked type="checkbox" name="renderInformation"/>
-				</div>
-				<div class="form-group">
-					<label for="recognizeSetting" > Render Infomation as Sentence </label>
-					<input class="btn-primary" type="checkbox" name="renderSentence"/>
-				</div>
-				<div class="form-group">
-					<label for="recognizeSetting" > Render Person Confidence </label>
-					<input class="btn-primary" checked type="checkbox" name="renderConfidence"/>
-				</div>
-				<div class="form-group">
-					<label for="minFaceSize" > Minimum Face Size To Detect </label>
-					<meter class="btn-primary" type="meter" name="minFaceSize" > </meter>
-				</div>
-				<div class="form-group">
-					<label for="euclideanDistance" > Maximum Euclidean Distance </label>
-					<meter min="0.001" max="10" class="btn-primary" type="meter" name="euclideanDistance" ><range></range></meter>
+						</li>
+						<li id="recongitionButton">
+							<a >Facial Recongition </a>
+							<div class="tip">
+								<img class="img-fluid" src="./icons8/help-25.png"></img>
+								<span>
+									The faces decteted since the begining of the video stream
+								</span>
+							</div>
+						</li>
+						<li id="settingsButton">
+							<a >Application Settings</a>
+							<div class="tip">
+								<img class="img-fluid" src="./icons8/help-25.png"></img>
+								<span>
+									Configure the Application's  Settings 
+								</span>
+							</div>
+							
+						</li>
+					</ul>
+					<hr>
 				</div>
 				
-				<div class="form-group">
-					<label for="scaleFactor" > Scale Factor </label>
-					<meter class="btn-primary" type="meter" name="scaleFactor" > </meter>
+
+				<div class="panel" hidden="true" id="detectionPanel">
+					<div id="detectionView"></div>
+				</div>
+
+
+				<div class="panel" hidden="true" id="recongitionPanel">
+					<div id="recognitionView"></div>	
+				</div>
+
+				<div class="panel" hidden="true" id="settingsPanel">
+					<div class="form-group">
+						<label for="extractSetting" > Extract Faces </label>
+						<input class="btn-primary" checked type="checkbox" name="extractSetting"/>
+					</div>
+					<div class="form-group">
+						<label for="recognizeSetting" > Recognize People </label>
+						<input class="btn-primary" checked type="checkbox" name="recognizeSetting"/>
+					</div>
+					<div class="form-group">
+						<label for="renderOnCanvas" > Display Dectections on Top of the Video</label>
+						<input class="btn-primary" checked type="checkbox" name="renderOnCanvas"/>
+					</div>
+					<div class="form-group">
+						<label for="renderSentence" > Render Infomation as Sentence </label>
+						<input class="btn-primary" type="checkbox" name="renderSentence"/>
+					</div>
+					<div class="form-group">
+						<label for="renderConfidence" > Render Person Confidence </label>
+						<input class="btn-primary" checked type="checkbox" name="renderConfidence"/>
+					</div>
+					<div class="form-group">
+						<label for="scaleFactor" > Scale Factor </label>
+						<input type="number"  max="1"  min="0.001"  value="0.709" name="scaleFactor"/>
+					</div>
 				</div>
 			</div>
 		</div>

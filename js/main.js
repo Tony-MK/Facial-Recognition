@@ -1,148 +1,97 @@
 'use strict';
-
-
-import { 
-	addPersonButton,
-	canvas,
-	calculateEuclideanDistance,
-	cameraIniti,
-	clearCanvas,
-	clearStatus,
-	clearButton,
-	controlButtons,
-	peopleDiv,
-	detectButton,
-	detectionView,
-	video,
-	setStatus,
-	imageInput
-} from "./header.js"
-
+import { canvas,canvasContext,controlButtons,cameraIniti,clearCanvas,clearStatus,detectButton,detectionView,pauseDetectButton,video,videoInput,startUpView,setStatus} from "./header.js"
 import { Person } from "./person.js"
-
-let maxFaceLabelDistance = 0.3; // Maxiuim Euclidean Distance between two different face labels
-
-let Initializated = false;
-let isDetecting = false;
-let isRecongizingFaces = true;
-let extractFaces  = true;
-let renderInformation = true;
-let renderConfidence = true;
-let renderSentence = false;
-window.people = {}
-
-//Settings
-document.querySelector('input[name="renderInformation"]').onclick = () => {renderInformation = !renderInformation;}
-document.querySelector('input[name="extractSetting"]').onclick = () => {extractFaces = !extractFaces;}
-document.querySelector('input[name="recognizeSetting"]').onclick = () => {isRecongizingFaces = !isRecongizingFaces;}
-document.querySelector('input[name="renderSentence"]').onclick = () => {renderSentence = !renderSentence;}
-document.querySelector('input[name="renderConfidence"]').onclick = () => {renderConfidence = !renderConfidence;}
-
-
-var readFile = (file,onload) => {
-	var reader = new FileReader();
-	reader.onload = onload;
-	reader.readAsDataURL(file);
-}
-
-addPersonButton.addEventListener("click",()=>{imageInput.click()});
-imageInput.change(async (event) => {
-	let prevHTML = addPersonButton.innerHTML ;
-	if (event.target.files){
-		for (var i = event.target.files.length - 1; i >= 0; i--) {
-			addPersonButton.innerHTML = `Reading ${event.target.files[i].name}`;
-			let image = document.createElement("img")
-			image.src = URL.createObjectURL(event.target.files[i]);
-			addPersonButton.innerHTML = `Finding Faces in ${event.target.files[i].name}`;
-
-			const results = await faceapi.detectAllFaces(image)
-				.withFaceLandmarks()
-				.withFaceExpressions()
-				.withFaceDescriptors()
-				.withAgeAndGender()
-
-			addPersonButton.innerHTML = `Extracting Faces in ${event.target.files[i].name}`;
-			const faces = await faceapi.extractFaces(image,results.map((res) => res.detection));
-			for (var i = faces.length - 1; i >= 0; i--) {
-				let isCopy = false;
-				for(var personID in window.people){
-					if(window.people[personID].isTheSame(results[i].descriptor,maxFaceLabelDistance)){
-						addPersonButton.innerHTML = `ERROR: Face ${i+1}/${faces.length} is similiar to ${window.people[personID].name}`;
-						window.people[personID].update(results[i]);
-						isCopy = true;
-						break;
-					}
-				}
-				if (isCopy){continue;}
-
-				let faceImage = document.createElement("img")
-				faceImage.src = faces[i].toDataURL("image/png")
-
-				var person = new Person(
-						"Unkwnown Person",
-						faceImage,
-						results[i].age,
-						results[i].descriptor,
-						results[i].expressions,
-						results[i].gender,
-						results[i].genderProbability
-					)
-				addPersonButton.innerHTML = "Successfully added person";
-				window.people[person.id] = person
-			}
-		}
-	}
-	addPersonButton.innerHTML = prevHTML;
-	renderPeople()
-});
-detectButton.onclick = () =>{
-	if(isDetecting){
-		detectButton.innerHTML = "Resume Detecting Faces";
-		detectButton.setAttribute("class","btn-success");
-		isDetecting = false;
-		return;
-	}
-	detectButton.setAttribute("class","btn-warning");
-	detectButton.innerHTML = "Stop Detecting Faces";
-	runFaceDectection();	
-}
-
-
-
-
 import { resultParser } from "./result_parser.js"
 
-
 const MODEL_PATH = '/js/vendor/face-api.js/weights/';
-
 const DEFAULT_MTCNN_OPTIONS = {
-// number of scaled versions of the input image passed through the CNN
-  // of the first stage, lower numbers will result in lower inference time,
-  // but will also be less accurate
+  //  number of scaled versions of the input image passed through the CNN of the first stage, lower numbers will result in lower inference time, but will also be less accurate
   maxNumScales: 10,
-  // scale factor used to calculate the scale steps of the image
-  // pyramid used in stage 1
+  // scale factor used to calculate the scale steps of the image pyramid used in stage 1
   scaleFactor: 0.709,
-  // the score threshold values used to filter the bounding
-  // boxes of stage 1, 2 and 3
+  // the score threshold values used to filter the bounding boxes of stage 1, 2 and 3
   scoreThresholds: [0.6, 0.7, 0.7],
-  // mininum face size to expect, the higher the faster processing will be,
-  // but smaller faces won't be detected
-  // limiting the search space to larger faces for webcam detection
-  minFaceSize: 200,
+  // mininum face size to expect, the higher the faster processing will be,but smaller faces won't be detected,limiting the search space to larger faces for webcam detection
+  minFaceSize: 50,
 }
 
 const mtcnnForwardParams = {
-	maxNumScales: 10,
-	scaleFactor: 0.01, 
-	scoreThresholds: [0.8, 0.9, 0.95],
-	minFaceSize: 10000,
+	maxNumScales: 15,
+	scaleFactor: 0.709, 
+	scoreThresholds:  [0.6, 0.7, 0.7],
+	minFaceSize: 25,
 }
-const MtcnnOptions = new faceapi.MtcnnOptions(DEFAULT_MTCNN_OPTIONS);
+let MtcnnOptions = new faceapi.MtcnnOptions(mtcnnForwardParams);
+let maxFaceLabelDistance = 0.4; // Maxiuim Euclidean Distance between two different face labels
+let Initializated = false;
+let runningFaceDectection = false;
+let isRecongizingFaces = true;
+let extractFaces  = true;
+let renderOnCanvas = true;
+let renderConfidence = true;
+let renderSentence = false;
+
+window.people = {}
+
+//Settings
+document.querySelector('input[name="extractSetting"]').onclick = () => {extractFaces = !extractFaces;}
+document.querySelector('input[name="recognizeSetting"]').onclick = () => {isRecongizingFaces = !isRecongizingFaces;}
+
+document.querySelector('input[name="renderOnCanvas"]').onclick = () => {renderOnCanvas = !renderOnCanvas;}
+document.querySelector('input[name="renderSentence"]').onclick = () => {renderSentence = !renderSentence;}
+document.querySelector('input[name="renderConfidence"]').onclick = () => {renderConfidence = !renderConfidence;}
+document.getElementById("webCamButton").onclick = () => {cameraIniti();}
+
+
+const isVideoEnded = (video.currentTime == video.duration)
+
+var getCurrentFrame = (callback) =>{
+	video.pause()
+	canvasContext.drawImage(video,0,0);
+	canvas.toBlob((blob) => {
+		let frame = document.createElement("img")
+		frame.src = URL.createObjectURL(blob);
+		callback(frame);
+	});
+	clearCanvas();
+	if(video.currentTime < video.duration){
+		video.play();
+	}
+}
+
+var playVideo = () => {
+	if(video.currentTime < video.duration){
+		video.play();
+	}
+}
+
+video.addEventListener("timeupdate",async () => {
+	if(runningFaceDectection){
+		video.pause();
+		await renderResults(await faceapi.detectAllFaces(video,MtcnnOptions).withFaceLandmarks().withFaceExpressions().withFaceDescriptors().withAgeAndGender())
+		playVideo();
+	}
+},false);
+
+pauseDetectButton.onclick = () => {
+	if(runningFaceDectection){
+		detectButton.removeAttribute("hidden")
+		pauseDetectButton.setAttribute("hidden","true");
+		runningFaceDectection = false;
+	}
+}
+detectButton.onclick = () =>{
+	if(runningFaceDectection){return;}
+	pauseDetectButton.removeAttribute("hidden")
+	detectButton.setAttribute("hidden","true");
+	runningFaceDectection = true;
+
+}
+
+
 
 var runFaceDectection = async () => {
-	isDetecting = true;
-	while (isDetecting) {
+	while (runningFaceDectection) {
 		await renderResults(await faceapi.detectAllFaces(video,MtcnnOptions)
 			.withFaceLandmarks()
 			.withFaceExpressions()
@@ -154,31 +103,23 @@ var runFaceDectection = async () => {
 
 
 
-function findBestMatch(descriptor){
-	let bestMatch,leastDist,nMatches;
-	for(var index in window.people){
-		const dist = window.people[index].calculateEuclideanDistance(descriptor);
-		if (dist < maxFaceLabelDistance){
-			nMatches++;
-			if (leastDist === undefined || leastDist < dist ){
-				console.warning("Found ",nMatches,"Matches for ",bestMatch.name,"Dist: ",dist);
-				bestMatch = window.people[index];
-				leastDist = dist;
+function findBestMatch(descriptor,callback){
+	let bestMatch,nMatches = 0;
+	for(var personID in window.people){
+		const distance = window.people[personID].calculateAverageEuclideanDistance(descriptor);
+		if (distance < maxFaceLabelDistance){
+			nMatches+= 1;
+			if (bestMatch === undefined){
+				bestMatch = {"person":window.people[personID],"distance":distance};
+				continue;
 			}
+			if(bestMatch.distance < dist){
+				bestMatch = {"person":window.people[personID],"distance":distance}
+			};
+			console.warning("Found ",nMatches," Face Matches with distance for ",distance, ". Best Match :",bestMatch.person.name);
 		}
 	}
-	return bestMatch,leastDist
-}
-function recogonizeFace(result){
-	let person,distance = findBestMatch(result.descriptor);
-	if (person !== undefined){
-		person.update(result);
-		result.euclideanDistance = distance;
-		result.gender,result.genderProbability = person.getGender();
-		result.age = person.age;
-		result.personName = person.name;
-	}
-	return result
+	return bestMatch;
 }
 
 function validateResults(results){
@@ -193,7 +134,6 @@ function validateResults(results){
 }
 
 async function displayResult(result){
-	if(!renderInformation){return}
 	// Drawing Box around Faces
 	await new faceapi.draw.DrawBox(result.detection.box,{color:"blue"}).draw(canvas);
    	
@@ -214,73 +154,115 @@ async function displayResult(result){
 
 	}
 	textArray = [];
-
 	if (result.personName !== undefined){
 		textArray.push(`NAME:${result.personName} (${Math.round(result.euclideanDistance* 100) /100})`);
 	}
 	textArray.push(`AGE: ${rParser.parseAge()} (${rParser.parseBirthDate()})`);
-		textArray.push(`MOOD: ${rParser.parseExpression()}`);
-		textArray.push(`GENDER: ${rParser.parseGender()}`);
+	textArray.push(`MOOD: ${rParser.parseExpression()}`);
+	textArray.push(`GENDER: ${rParser.parseGender()}`);
 	await new faceapi.draw.DrawTextField(textArray,result.detection.box.topLeft,{color:"blue"}).draw(canvas);
 }
 
-async function  renderResults(results){
+async function renderResults(results){
 	clearCanvas();
 	if (!validateResults(results)){return}
 	let faces = undefined;
 	if (extractFaces){
 		detectionView.innerHTML = "";
 		faces = await faceapi.extractFaces(video,results.map((res) => res.detection))
-	}
-	faceapi.resizeResults(results, canvas).forEach(async (result,index) => {
-		if (isRecongizingFaces){displayResult(recogonizeFace(result));return}
-			displayResult(result);
-
-		if (faces !== undefined){
-			let rParser =  new resultParser(result);
-
-			detectionView.innerHTML += `
-				<div class="col-sm-6 person"> 
-			 		<img class="img-fluid" src="${faces[index].toDataURL()}"/>
-			 		<p><b>AGE:</b> ${rParser.parseAge()}</p>
-			 		<p><b>GENDER:</b> ${rParser.parseGender()}</p>
-			 		<p><b>MOOD:</b> ${rParser.parseExpression()}</p>
-			 		<p><b>BIRTHDATE:</b> ${rParser.parseBirthDate()}</p>
-			 	</div>`
+		if (faces.length > 0){
+			detectionView.innerHTML += `<div class="row dectections"><p>${video.currentTime} </p></div>`
 		}
+	}
+
+
+
+	faceapi.resizeResults(results, canvas).forEach((result,index) => {
+		if (isRecongizingFaces){
+			const match = findBestMatch(result.descriptor);
+			if (match !== undefined){
+				match.person.update(result);
+
+				if (renderOnCanvas){
+					result.euclideanDistance = match.distance;
+					result.gender = match.person.getGender();
+					result.genderProbability = match.person[result.gender]
+					result.age = match.person.age;
+					result.personName = match.person.name;
+					displayResult(result);
+				}
+
+				if (faces !== undefined){setDectectionToContentHTML(faces[index],result)}; 
+				return;
+			}
+		}
+
+		if (renderOnCanvas){displayResult(result)}
+		if (extractFaces){setDectectionToContentHTML(faces[index],result)}; 
+		return;
+	
 
 	});
 	setStatus("Ready for Facial Dectection", "success");
 }
-
-
-var renderPeople = () =>{
-	peopleDiv.innerHTML = ""
-	for(var personID in people){
-		peopleDiv.innerHTML += people[personID].generateHTML()
-		people[personID].setInputListener()
-	}
+var setDectectionToContentHTML = (face,result) =>{
+	let rParser =  new resultParser(result);
+	detectionView.innerHTML += `
+		<div class="col-sm-6 person"> 
+	 		<img class="img-fluid" src="${face.toDataURL()}"/>
+	 		<p><b>NAME:</b> ${result.personName === undefined ? "Unknown Person" :result.personName} </p>
+	 		<p><b>AGE:</b> ${rParser.parseAge()}</p>
+	 		<p><b>GENDER:</b> ${rParser.parseGender()}</p>
+	 		<p><b>MOOD:</b> ${rParser.parseExpression()}</p>
+	 		<p><b>BIRTHDATE:</b> ${rParser.parseBirthDate()}</p>
+	 	</div>`
 }
-
-var initi = async () => {
-	console.log(faceapi.nets)
+var loadModels = async () => {
 	await faceapi.loadMtcnnModel(MODEL_PATH).then(()=>{setStatus(`Successfully Loaded MCTNN Model `,"success")})
 	await faceapi.loadSsdMobilenetv1Model(MODEL_PATH).then(()=>{setStatus(`Successfully Loaded SSD Moblie Net Model `,"success")})
 	await faceapi.loadFaceLandmarkModel(MODEL_PATH).then(()=>{setStatus(`Successfully Loaded Face Landmark Model `,"success")})
 	await faceapi.loadFaceRecognitionModel(MODEL_PATH).then(()=>{setStatus(`Successfully Loaded Face Recongition Model `,"success")})
 	await faceapi.loadFaceExpressionModel(MODEL_PATH).then(()=>{setStatus(`Successfully Loaded Face Expression Model `,"success")})
 	await faceapi.nets.ageGenderNet.load(MODEL_PATH).then(()=>{setStatus(`Successfully Loaded Age and Gender Model `,"success")});
+	setStatus("Await Video Source...", "info");
 
-	await cameraIniti();
-	setStatus("Initalizing Dectetion...", "info");
+}
 
-	await faceapi.detectAllFaces(video,MtcnnOptions)
-	clearCanvas();
+var initDectetion = async () => {
+	await setStatus("Initalizing Dectetion...", "info");
+	await document.getElementsByTagName("section")[0].removeAttribute("hidden")
+	startUpView.hidden = "true";
+	
+	await faceapi.detectSingleFace(video,MtcnnOptions);
+
+
+	await clearCanvas();
+	await setStatus("Ready...", "success")
+
+}
+
+
+
+
+setStatus("Initalizing Appilcation...", "info");
+loadModels();
+
+
+
+
+document.getElementById("webcamSelect").onclick = (e) => {cameraIniti();initDectetion()}
+document.getElementById("videoSelect").onclick = (e) => {
+	videoInput.change(event => {
+		if (event.target.files && event.target.files[0]){
+			video.src = "./videos/"+event.target.files[0].name;
+			initDectetion();
+			videoInput.change(event => {if (event.target.files && event.target.files[0]){video.src = "./videos/"+event.target.files[0].name;}});
+		}
+	});
+	videoInput.click();
 	
 }
-setStatus("Initalizing Appilcation...", "info");
 
-initi();
 
 
 

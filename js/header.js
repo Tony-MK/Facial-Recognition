@@ -1,54 +1,113 @@
 'use strict';
 
 export {
-	addPersonButton,
 	canvas,
-	calculateEuclideanDistance,
 	cameraIniti,
+	pauseDetectButton,
 	clearCanvas,
 	clearStatus,
-	clearButton,
+	canvasContext,
 	controlButtons,
-	peopleDiv,
+	recognitionView,
 	detectButton,
 	detectionView,
 	video,
+	videoInput,
+	startUpView,
 	setStatus,
-	imageInput
 }
 
-var calculateEuclideanDistance = (x,y) => {
-	let dist = 0;
-	for (var i = x.length - 1; i >= 0; i--) {dist += Math.pow(x[i] - y[i],2)}
-	return Math.sqrt(dist);
+import {Person} from "./person.js"
+var isNewPerson = (result) => {
+	for(var personID in window.people){
+		if(window.people[personID].isTheSame(result.descriptor,maxFaceLabelDistance)){
+			window.people[personID].update(result);
+			return false;
+		}
+	}
+	return true;
 }
 
 
-const video = document.getElementById("inputVideo");
+var createPerson = (result,face) => {
+	if(isNewPerson(result)){
+		const faceImage = document.createElement("img")
+		faceImage.src = face.toDataURL("image/png");
+		const person = new Person("Unknown",faceImage,result.age,result.descriptor,result.expressions,result.gender,result.genderProbability)
+		window.people[person.id] = person;
+	}
+}
+var createPeopleFromImageFile = async (image_file) =>{
+
+	let image = document.createElement("img")
+	image.src = URL.createObjectURL(image_file);
+
+	const results = await faceapi.detectAllFaces(image)
+		.withFaceLandmarks()
+		.withFaceExpressions()
+		.withFaceDescriptors()
+		.withAgeAndGender()
+
+	const faces = await faceapi.extractFaces(image,results.map((res) => res.detection));
+	results.forEach((result,index) => {createPerson(index,faces[index])})
+		
+}
+
+
+
+
+// Views
+const detectionView = document.getElementById("detectionView");
+const recognitionView = document.getElementById('recognitionView');
+const startUpView = document.getElementById("startUpView");
+
+
+
+
+// Canvas - Render Facial Dectection 
 const canvas = document.getElementById("overlay");
+var canvasContext = canvas.getContext('2d')
+canvas.onmouseenter = () => {canvas.style.zIndex = video.style.zIndex -2;}
+
+// Playback Media
+const video = document.getElementById("playback")
+video.onmouseleave = () => {canvas.style.zIndex = 1000;};
+
 const statusDiv = document.getElementById("statusDiv");
 const videoDiv = document.getElementById("videoDiv");
 
 const controlButtons = document.getElementById("controlButtons")
 const detectButton = document.getElementById("startButton");
-const detectionView = document.getElementById("detectionView");
-
-const clearButton = document.getElementById("clearButton"); clearButton.onclick = () =>{clearCanvas();}
-const addPersonButton = document.getElementById("addPerson")
-const imageInput = $("#imageInput")
-
-const peopleDiv = document.getElementById('recognizedPeople')
+const pauseDetectButton = document.getElementById("pauseButton")
 
 
-var buttons = []
+
+const videoInput = $("#videoInput");
+document.getElementById("videoUpload").addEventListener("click" ,() => {videoInput.click()});
+
+
+const imageInput = $("#imageInput");
+imageInput.change(event => {
+	if (event.target.files){
+		for (var i = 0; i < event.target.files.length ; i++) {
+			createPeopleFromImageFile(event.target.files[i]);
+		}
+	}
+});
+
+
+// Buttons
+
+document.getElementById("addPerson").addEventListener("click",()=>{imageInput.click()});
+document.getElementById("clearButton").onclick = () =>{clearCanvas();}
+
+
+//Panels
 var activePanel = "detection";
-var panelButtons = ["detection","recongition","settings"]
-
 var enablePanel = (panelName) => {
-	disablePanel(activePanel);
 	document.getElementById(panelName+"Button").setAttribute("class","active")
 	document.getElementById(panelName+"Panel").removeAttribute("hidden")
-	activePanel = panelName;
+	
 }
 
 var disablePanel = (panelName) => {
@@ -56,25 +115,25 @@ var disablePanel = (panelName) => {
 	document.getElementById(panelName+"Panel").setAttribute("hidden", "true");
 }
 
-enablePanel(activePanel)
-panelButtons.forEach((id,index)=> {
-	document.getElementById(id+"Button").onclick = (e) => {enablePanel(e.srcElement.parentNode.id.slice(0,e.srcElement.parentNode.id.indexOf("Button")));}
-})
+
+["detection","recongition","settings"].forEach((id,index)=> {
+	document.getElementById(id+"Button").onclick = (e) => {
+		disablePanel(activePanel);
+		activePanel = e.srcElement.parentNode.id.slice(0,e.srcElement.parentNode.id.indexOf("Button"));
+		enablePanel(activePanel);
+	}
+});
+
+enablePanel(activePanel) /// ATIVATES ACTIVE PANEL WHEN DOCUMENT IS LOADED
 
 
 video.onresize = () => {
 	canvas.width = video.offsetWidth;
 	canvas.height = video.offsetHeight;
-	videoDiv.height = canvas.height;
-	videoDiv.width = canvas.width
+	videoDiv.width = video.offsetWidth;
+	videoDiv.height = video.offsetHeight;
 }
-
-window.onresize = () =>{
-	video.onresize();
-}
-
-
-
+window.onresize = () =>{video.onresize()}
 
 function openCamera(){
 	if (navigator.getUserMedia){
@@ -89,18 +148,15 @@ function openCamera(){
 }
 
 function cameraIniti(){
-	if (navigator){openCamera();return}
-	document.getElementById("content").innerHTML = `<h2 class="error">Navigator is Not Supported</h2><p>Your browser is old and have navigator module. To solve this issue, kindly upgrade your browser</p>`;
+	if (navigator){openCamera();}
+	else{
+		document.getElementById("content").innerHTML = `
+			<h2 class="error">Navigator is Not Supported</h2>
+			<p>Your browser is old and have navigator module. To solve this issue, kindly upgrade your browser</p>
+			`;
+	}
 }
 
-var clearCanvas = () => {
-	// Clearing Drawings on  Canvas 
-	canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
-}
-
-var clearStatus = () =>{
-	statusDiv.innerHTML = ""
-}
 
 var setStatus = (status,type,elem) => {
 	if (elem === undefined){
@@ -111,6 +167,9 @@ var setStatus = (status,type,elem) => {
 	}
 }
 
+
+var clearCanvas = () => {canvasContext.clearRect(0,0,canvas.width,canvas.height); }// Clearing Detecetion on  Canvas
+var clearStatus = () =>{statusDiv.innerHTML = setStatus("Ready","success")} // Clearing Status 
 
 
 
