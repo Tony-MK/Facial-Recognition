@@ -8,36 +8,43 @@
 
 
 <body>
-	
-	<div id="startUpView">
-		<div class="col-lg-12">
-			<h2> Were to get a Video to Analyze </h2>
-		</div>
+	<nav class="col-lg-12">
 		<div class="row">
-			<div style="border-right:1px solid #000;" class="col-sm-6" id="videoSelect">
-				<img class="img-fluid" src="icons8/video-playlist-50.png" alt="add-image">
-				<span> Video Clip </span>
+			<div class="col-md-3">
+				<a >Facy</a>
 			</div>
-			<div class="col-sm-6" id="webcamSelect">
-				<img class="img-fluid" src="icons8/camera-50.png" alt="add-image">
-				<span> Live Camera Feed </span>
+			<div class="col-md-4">
+				<h5 id="sourceName"></h5>
 			</div>
+			<div class="col-md-5" id="statusDiv">
+				
+			</div>
+		</div>
+	</nav>
+	<div id="startUpView">
+		<h2> Were to Get a Video ?</h2>
+		<p> Choose a video to start analzing either use camera or pick a video from your device.</p>
+		<div class="row">
+			<div class="col-md-1"></div>
+			<div class="col-md-4 startUpOption" id="videoSelect">
+				<img class="img-fluid" src="icons8/video-playlist-500.png" alt="add-image"/>
+				<span> Video </span>
+				<p> Upload a .mp4, .ogg, .mkv video clip.</p>
+			</div>
+			<div class="col-md-2"></div>
+			<div class="col-md-4 startUpOption" id="webcamSelect">
+				<img class="img-fluid" src="icons8/camera-500.png" alt="add-image"/>
+				<span>Camera</span>
+				<p> Take live feed from the camera. </p>
+			</div>
+			<div class="col-md-1"></div>
 		</div>
 	</div> 
 	
 	
 
 	<section hidden>
-		<nav class="col-lg-12">
-			<div class="row">
-				<div class="col-md-7">
-					<a >Facy</a>
-				</div>
-				<div class="col-md-5" id="statusDiv">
-					
-				</div>
-			</div>
-		</nav>
+		
 
 		<div class="row">
 			<div id="videoDiv">
@@ -61,7 +68,7 @@
 
 					<div class="tip" id="videoUpload">
 						<img class="img-fluid" src="icons8/video-playlist-50.png" alt="add-image">
-						<input type="file" accept="video/*" hidden="" id="videoInput">
+						<input type="file" accept="video/.mp4 .ogg" hidden="" id="videoInput">
 						<span> Upload Video To Analyze </span>
 					</div>
 
@@ -124,24 +131,33 @@
 				</div>
 
 				<div class="panel" hidden="true" id="settingsPanel">
+
 					<div class="form-group">
-						<label for="extractSetting" > Extract Faces </label>
+						<label for="expressionSetting" > Dectect Facial Expressions </label>
+						<input class="btn-primary" checked type="checkbox" name="expressionSetting"/>
+					</div>
+					<div class="form-group">
+						<label for="ageGenderSetting" > Dectect Age and Gender </label>
+						<input class="btn-primary" checked type="checkbox" name="ageGenderSetting"/>
+					</div>
+					<div class="form-group">
+						<label for="extractSetting" > Extract Facial Dectetions </label>
 						<input class="btn-primary" checked type="checkbox" name="extractSetting"/>
 					</div>
 					<div class="form-group">
-						<label for="recognizeSetting" > Recognize People </label>
+						<label for="recognizeSetting" > Recognize Faces </label>
 						<input class="btn-primary" checked type="checkbox" name="recognizeSetting"/>
 					</div>
 					<div class="form-group">
-						<label for="renderOnCanvas" > Display Dectections on Top of the Video</label>
+						<label for="renderOnCanvas" > Display Dectections on the Video</label>
 						<input class="btn-primary" checked type="checkbox" name="renderOnCanvas"/>
 					</div>
 					<div class="form-group">
-						<label for="renderSentence" > Render Infomation as Sentence </label>
+						<label for="renderSentence" > Format Infomation as Sentence </label>
 						<input class="btn-primary" type="checkbox" name="renderSentence"/>
 					</div>
 					<div class="form-group">
-						<label for="renderConfidence" > Render Person Confidence </label>
+						<label for="renderConfidence" > Display Face Dectection Probability </label>
 						<input class="btn-primary" checked type="checkbox" name="renderConfidence"/>
 					</div>
 					<div class="form-group">
@@ -153,6 +169,8 @@
 		</div>
 	</section>
 </body>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
 <script src="/js/vendor/jquery-3.4.1.js" type="text/javascript"></script>
 <script src="/js/vendor/face-api.js/dist/face-api.js" type="text/javascript"></script>
 

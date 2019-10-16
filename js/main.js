@@ -1,32 +1,19 @@
 'use strict';
-import { canvas,canvasContext,controlButtons,cameraIniti,clearCanvas,clearStatus,detectButton,detectionView,pauseDetectButton,video,videoInput,startUpView,setStatus} from "./header.js"
+import { canvas,canvasContext,controlButtons,cameraIniti,clearCanvas,setSourceName,clearStatus,detectButton,detectionView,pauseDetectButton,video,videoInput,startUpView,setStatus} from "./header.js"
 import { Person } from "./person.js"
 import { resultParser } from "./result_parser.js"
+import { SSD_MOBILE_NET,MTCNN,TINY_FACE_DECTECTOR,modelOptions} from "./model_options.js"
 
-const MODEL_PATH = '/js/vendor/face-api.js/weights/';
-const DEFAULT_MTCNN_OPTIONS = {
-  //  number of scaled versions of the input image passed through the CNN of the first stage, lower numbers will result in lower inference time, but will also be less accurate
-  maxNumScales: 10,
-  // scale factor used to calculate the scale steps of the image pyramid used in stage 1
-  scaleFactor: 0.709,
-  // the score threshold values used to filter the bounding boxes of stage 1, 2 and 3
-  scoreThresholds: [0.6, 0.7, 0.7],
-  // mininum face size to expect, the higher the faster processing will be,but smaller faces won't be detected,limiting the search space to larger faces for webcam detection
-  minFaceSize: 50,
-}
+const MODELS_DIRECTORY = '/js/vendor/face-api.js/weights/';
 
-const mtcnnForwardParams = {
-	maxNumScales: 15,
-	scaleFactor: 0.709, 
-	scoreThresholds:  [0.6, 0.7, 0.7],
-	minFaceSize: 25,
-}
-let MtcnnOptions = new faceapi.MtcnnOptions(mtcnnForwardParams);
+var currentFaceDectetionModel = TINY_FACE_DECTECTOR;
+
 let maxFaceLabelDistance = 0.4; // Maxiuim Euclidean Distance between two different face labels
-let Initializated = false;
 let runningFaceDectection = false;
 let isRecongizingFaces = true;
-let extractFaces  = true;
+let isDectectingExpressions = true;
+let isDectectingAgeAndGender = true;
+let isExtractingFaces  = true;
 let renderOnCanvas = true;
 let renderConfidence = true;
 let renderSentence = false;
@@ -34,16 +21,58 @@ let renderSentence = false;
 window.people = {}
 
 //Settings
-document.querySelector('input[name="extractSetting"]').onclick = () => {extractFaces = !extractFaces;}
+document.querySelector('input[name="extractSetting"]').onclick = () => {isExtractingFaces = !isExtractingFaces;}
 document.querySelector('input[name="recognizeSetting"]').onclick = () => {isRecongizingFaces = !isRecongizingFaces;}
+document.querySelector('input[name="ageGenderSetting"]').onclick = () => {isDectectingAgeAndGender = !isDectectingAgeAndGender;}
+document.querySelector('input[name="expressionSetting"]').onclick = () => {isDectectingExpressions = !isDectectingExpressions;}
+
 
 document.querySelector('input[name="renderOnCanvas"]').onclick = () => {renderOnCanvas = !renderOnCanvas;}
 document.querySelector('input[name="renderSentence"]').onclick = () => {renderSentence = !renderSentence;}
 document.querySelector('input[name="renderConfidence"]').onclick = () => {renderConfidence = !renderConfidence;}
-document.getElementById("webCamButton").onclick = () => {cameraIniti();}
+document.getElementById("webCamButton").onclick = cameraIniti
 
 
-const isVideoEnded = (video.currentTime == video.duration)
+pauseDetectButton.onclick = () => {
+	if(runningFaceDectection){
+		detectButton.removeAttribute("hidden")
+		pauseDetectButton.setAttribute("hidden","true");
+		runningFaceDectection = false;
+		setStatus("On Pause...", "info");
+
+	}
+}
+detectButton.onclick = () =>{
+	if(runningFaceDectection){return;}
+	setStatus("Dectecting Faces...", "success");
+	pauseDetectButton.removeAttribute("hidden")
+	detectButton.setAttribute("hidden","true");
+	runningFaceDectection = true;
+
+}
+
+var loadVideo = (event) =>{
+	if (event.target.files && event.target.files[0]){
+		
+		video.removeAttribute("srcOject");
+		video.setAttribute("src","./videos/"+event.target.files[0].name);
+		setSourceName(event.target.files[0].name);
+	}
+}
+
+document.getElementById("webcamSelect").onclick = (e) => {
+	cameraIniti();
+	initDectetion();
+}
+document.getElementById("videoSelect").onclick = (e) => {
+	videoInput.change(event => {
+			loadVideo(event);
+			initDectetion();
+			videoInput.change(loadVideo)
+	});
+	videoInput.click();
+}
+
 
 var getCurrentFrame = (callback) =>{
 	video.pause()
@@ -54,9 +83,7 @@ var getCurrentFrame = (callback) =>{
 		callback(frame);
 	});
 	clearCanvas();
-	if(video.currentTime < video.duration){
-		video.play();
-	}
+	playVideo();
 }
 
 var playVideo = () => {
@@ -65,41 +92,59 @@ var playVideo = () => {
 	}
 }
 
-video.addEventListener("timeupdate",async () => {
-	if(runningFaceDectection){
-		video.pause();
-		await renderResults(await faceapi.detectAllFaces(video,MtcnnOptions).withFaceLandmarks().withFaceExpressions().withFaceDescriptors().withAgeAndGender())
-		playVideo();
-	}
-},false);
 
-pauseDetectButton.onclick = () => {
-	if(runningFaceDectection){
-		detectButton.removeAttribute("hidden")
-		pauseDetectButton.setAttribute("hidden","true");
-		runningFaceDectection = false;
-	}
-}
-detectButton.onclick = () =>{
-	if(runningFaceDectection){return;}
-	pauseDetectButton.removeAttribute("hidden")
-	detectButton.setAttribute("hidden","true");
-	runningFaceDectection = true;
-
-}
-
-
-
-var runFaceDectection = async () => {
-	while (runningFaceDectection) {
-		await renderResults(await faceapi.detectAllFaces(video,MtcnnOptions)
+var getFaceDectections = async (callback) =>{
+	// ALL
+	if(isDectectingExpressions && isDectectingAgeAndGender && isRecongizingFaces){
+		await faceapi.detectAllFaces(video,modelOptions[currentFaceDectetionModel])
 			.withFaceLandmarks()
-			.withFaceExpressions()
 			.withFaceDescriptors()
+			.withFaceExpressions()
+			.withAgeAndGender().then(results => callback(results));
+			
+	// TWO
+	}else if ((isDectectingExpressions && isRecongizingFaces) && !isDectectingAgeAndGender){
+		await faceapi.detectAllFaces(video,modelOptions[currentFaceDectetionModel])
+			.withFaceExpressions()
+			.withFaceLandmarks()
+			.withFaceDescriptors().then(results => callback(results));
+
+	}else if((isDectectingAgeAndGender && isRecongizingFaces) && !isDectectingExpressions){
+		await faceapi.detectAllFaces(video,modelOptions[currentFaceDectetionModel])
 			.withAgeAndGender()
-		)
+			.withFaceLandmarks()
+			.withFaceDescriptors().then(results => callback(results));
+
+	}else if((isDectectingExpressions && isDectectingAgeAndGender) && !isRecongizingFaces){
+		await faceapi.detectAllFaces(video,modelOptions[currentFaceDectetionModel])
+			.withFaceLandmarks()
+			.withFaceDescriptors()
+			.withFaceExpressions().then(results => callback(results));
+
+	// ONE 
+	}else if (isDectectingExpressions && !(isRecongizingFaces || isDectectingAgeAndGender)){
+		await faceapi.detectAllFaces(video,modelOptions[currentFaceDectetionModel])
+			.withFaceExpressions();
+
+	}else if(isDectectingAgeAndGender && !(isRecongizingFaces || isDectectingExpressions)){
+		await faceapi.detectAllFaces(video,options)
+			.withAgeAndGender().then(results => callback(results));
+
+	}else if(isRecongizingFaces && !(isDectectingAgeAndGender || isDectectingExpressions)){
+		await faceapi.detectAllFaces(video,modelOptions[currentFaceDectetionModel])
+			.withFaceLandmarks()
+			.withFaceDescriptors().then(results => callback(results));
+
+	}else{
+		setStatus("Dectection Error","error")
+		throw new Error(`Cannot Get Face Detection Results isDectectingExpressions: ${isDectectingExpressions} isRecongizingFaces: ${isRecongizingFaces} isDectectingAgeAndGender: ${isDectectingAgeAndGender}`);
 	}
 }
+
+
+video.addEventListener("timeupdate",() => {
+	if(runningFaceDectection){getFaceDectections(renderResults)}
+},false);
 
 
 
@@ -123,13 +168,15 @@ function findBestMatch(descriptor,callback){
 }
 
 function validateResults(results){
-	if(results == undefined){
-		setStatus("Failed to Dectect Faces because Dectection Results is type of undefined", "error")
+	if(typeof(results) !== "object"){
+		console.log("Failed to Dectect Faces because Dectection Results is type of "+typeof(results))
 		return false
 	}else if (results.length == 0){
-		setStatus("No Faces Dectected","warning");
+		setStatus("Failed to Dectect any Face","warning");
 		return false
 	}
+	setStatus(`Dectected ${results.length} Faces`, "success");
+
 	return true
 }
 
@@ -145,8 +192,11 @@ async function displayResult(result){
 	// Rendering Detection Details
 	let textArray,rParser = new resultParser(result)
 	if (renderSentence){
-		await new faceapi.draw.DrawTextField(
-			[`${result.personName === undefined ? "":result.personName+` (${result.euclideanDistance}) `}${rParser.parseAge()} year old ${rParser.parseExpression()} ${rParser.parseGender()} and born on ${rParser.parseBirthDate()}`],
+		await new faceapi.draw.DrawTextField([
+			`${result.personName === undefined ? "":result.personName+` (${Math.round(result.euclideanDistance* 100) /100}) is a`}
+				${result.age === undefined? "": rParser.parseAge()+"year old ("+rParser.parseBirthDate()+")"} 
+				${rParser.parseExpression()} ${rParser.parseGender()}`
+			],
 			result.detection.box.bottomLeft,
 			{color:"blue"}
 		).draw(canvas);
@@ -157,21 +207,36 @@ async function displayResult(result){
 	if (result.personName !== undefined){
 		textArray.push(`NAME:${result.personName} (${Math.round(result.euclideanDistance* 100) /100})`);
 	}
-	textArray.push(`AGE: ${rParser.parseAge()} (${rParser.parseBirthDate()})`);
-	textArray.push(`MOOD: ${rParser.parseExpression()}`);
-	textArray.push(`GENDER: ${rParser.parseGender()}`);
+	if(result.age !== undefined){
+		textArray.push(`AGE: ${rParser.parseAge()} (${rParser.parseBirthDate()})`);
+	}
+	if(result.expressions !== undefined){
+		textArray.push(`MOOD: ${rParser.parseExpression()}`);
+	}
+	if (result.gender !== undefined){
+		textArray.push(`GENDER: ${rParser.parseGender()}`);
+	}
 	await new faceapi.draw.DrawTextField(textArray,result.detection.box.topLeft,{color:"blue"}).draw(canvas);
 }
 
+var parseSeconds = (seconds) => {
+	const mins = Math.floor(video.currentTime/60)
+	return ` ${mins} Minutes and ${Math.round((seconds-mins)*100)/100} Seconds`
+}
 async function renderResults(results){
 	clearCanvas();
 	if (!validateResults(results)){return}
+
+
 	let faces = undefined;
-	if (extractFaces){
-		detectionView.innerHTML = "";
+	if (isExtractingFaces){
 		faces = await faceapi.extractFaces(video,results.map((res) => res.detection))
 		if (faces.length > 0){
-			detectionView.innerHTML += `<div class="row dectections"><p>${video.currentTime} </p></div>`
+			detectionView.innerHTML += `
+						<button class="row" data-target="#T_${video.currentTime*10000}" data-toggle="collapse" >${parseSeconds(video.currentTime)} </button>
+						<div class="row collapse" id="T_${video.currentTime*10000}">
+						`
+
 		}
 	}
 
@@ -192,76 +257,75 @@ async function renderResults(results){
 					displayResult(result);
 				}
 
-				if (faces !== undefined){setDectectionToContentHTML(faces[index],result)}; 
+				if (isExtractingFaces){setDectectionToContentHTML(faces[index],result)}; 
+				if (faces.length === index+1){detectionView.innerHTML += "</div>"}
 				return;
 			}
 		}
-
 		if (renderOnCanvas){displayResult(result)}
-		if (extractFaces){setDectectionToContentHTML(faces[index],result)}; 
+		if (isExtractingFaces){setDectectionToContentHTML(faces[index],result)}; 
+		if (faces.length === index+1){detectionView.innerHTML += "</div>"}
 		return;
 	
 
 	});
-	setStatus("Ready for Facial Dectection", "success");
+
+	
+	setStatus("Ready...", "success");
 }
 var setDectectionToContentHTML = (face,result) =>{
 	let rParser =  new resultParser(result);
 	detectionView.innerHTML += `
-		<div class="col-sm-6 person"> 
-	 		<img class="img-fluid" src="${face.toDataURL()}"/>
-	 		<p><b>NAME:</b> ${result.personName === undefined ? "Unknown Person" :result.personName} </p>
-	 		<p><b>AGE:</b> ${rParser.parseAge()}</p>
-	 		<p><b>GENDER:</b> ${rParser.parseGender()}</p>
-	 		<p><b>MOOD:</b> ${rParser.parseExpression()}</p>
-	 		<p><b>BIRTHDATE:</b> ${rParser.parseBirthDate()}</p>
+		<div class="person row"> 
+			<div class="col-sm-3">
+	 			<img class="img-fluid" src="${face.toDataURL()}"/>
+	 		</div>
+	 		<hr>
+	 		<div class="col-sm-9">
+		 		<p><b>NAME:</b> ${result.personName === undefined ? "Unknown Person" :result.personName} </p>
+		 		<p><b>AGE:</b> ${rParser.parseAge()}</p>
+		 		<p><b>GENDER:</b> ${rParser.parseGender()}</p>
+		 		<p><b>MOOD:</b> ${rParser.parseExpression()}</p>
+		 		<p><b>BIRTHDATE:</b> ${rParser.parseBirthDate()}</p>
+		 	</div>
 	 	</div>`
 }
-var loadModels = async () => {
-	await faceapi.loadMtcnnModel(MODEL_PATH).then(()=>{setStatus(`Successfully Loaded MCTNN Model `,"success")})
-	await faceapi.loadSsdMobilenetv1Model(MODEL_PATH).then(()=>{setStatus(`Successfully Loaded SSD Moblie Net Model `,"success")})
-	await faceapi.loadFaceLandmarkModel(MODEL_PATH).then(()=>{setStatus(`Successfully Loaded Face Landmark Model `,"success")})
-	await faceapi.loadFaceRecognitionModel(MODEL_PATH).then(()=>{setStatus(`Successfully Loaded Face Recongition Model `,"success")})
-	await faceapi.loadFaceExpressionModel(MODEL_PATH).then(()=>{setStatus(`Successfully Loaded Face Expression Model `,"success")})
-	await faceapi.nets.ageGenderNet.load(MODEL_PATH).then(()=>{setStatus(`Successfully Loaded Age and Gender Model `,"success")});
-	setStatus("Await Video Source...", "info");
 
+var renderModels = () =>{
+	for (var net in faceapi.nets){
+		console.info(net+":",faceapi.nets[net]);
+	}
 }
 
-var initDectetion = async () => {
-	await setStatus("Initalizing Dectetion...", "info");
-	await document.getElementsByTagName("section")[0].removeAttribute("hidden")
+var loadModels = async() => {
+	//await faceapi.loadMtcnnModel(MODELS_DIRECTORY).then(()=>{setStatus(`Successfully Loaded MCTNN Model `,"success")});
+	await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODELS_DIRECTORY);
+	await faceapi.loadSsdMobilenetv1Model(MODELS_DIRECTORY).then(()=>{setStatus(`Successfully Loaded SSD Moblie Net Model `,"success")});
+	await faceapi.loadFaceLandmarkModel(MODELS_DIRECTORY).then(()=>{setStatus(`Successfully Loaded Face Landmark Model `,"success")});
+	await faceapi.loadFaceRecognitionModel(MODELS_DIRECTORY).then(()=>{setStatus(`Successfully Loaded Face Recongition Model `,"success")});
+	await faceapi.loadFaceExpressionModel(MODELS_DIRECTORY).then(()=>{setStatus(`Successfully Loaded Face Expression Model `,"success")});
+	await faceapi.nets.ageGenderNet.load(MODELS_DIRECTORY).then(()=>{setStatus(`Successfully Loaded Age and Gender Model `,"success")});
+}
+	
+var initDectetion =  () => {
+	document.getElementsByTagName("section")[0].removeAttribute("hidden")
 	startUpView.hidden = "true";
-	
-	await faceapi.detectSingleFace(video,MtcnnOptions);
-
-
-	await clearCanvas();
-	await setStatus("Ready...", "success")
-
-}
-
-
-
-
-setStatus("Initalizing Appilcation...", "info");
-loadModels();
-
-
-
-
-document.getElementById("webcamSelect").onclick = (e) => {cameraIniti();initDectetion()}
-document.getElementById("videoSelect").onclick = (e) => {
-	videoInput.change(event => {
-		if (event.target.files && event.target.files[0]){
-			video.src = "./videos/"+event.target.files[0].name;
-			initDectetion();
-			videoInput.change(event => {if (event.target.files && event.target.files[0]){video.src = "./videos/"+event.target.files[0].name;}});
-		}
+	setStatus("Initalizing Facial Dectetion...", "info");
+	faceapi.detectSingleFace(video,modelOptions[currentFaceDectetionModel]).then(()=>{
+		console.info("Test Resutls:",result)
+		clearCanvas();
+		setStatus("Ready...", "success")
 	});
-	videoInput.click();
-	
 }
+
+var init = () =>{
+	setStatus("Initalizing Appilcation...", "info");
+	renderModels();
+	loadModels().then(() => {setStatus("Models Loaded. Awaiting Video...", "success");});
+}
+
+
+init();
 
 
 

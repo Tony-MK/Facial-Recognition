@@ -33,34 +33,28 @@ button{
 	display: inline;
 	font-size: 12px;
 }
-
-#startUpView {
-	width: 100vw;
-	height: 100vh;
-	padding: 5%;
-	background-color: white;
-	color: black;
+#sourceName{
+	font-size: inherit;
 }
-#startUpView span{
-	padding-top:10vh;
+#startUpView h2{
+	margin: 5vh 0px 3vh 0px;
+}
+.startUpOption span{
 	display: block;
+	margin:5vh 0vw 5vh 0vw;
+	font-size: 2vw;
 }
-#startUpView img{
-	min-height: 10vh;
-	min-width: 10vw; 
+.startUpOption img{
+	height: 20vh;
 }
-#startUpView .col-sm-6{
+.startUpOption{
+	margin: 5vh 0vw 5vh 0vw;
+	padding: 3vh 0px 3vh 0px;
 	cursor: pointer;
 	transition-duration: 2s;
-	font-size:20px;
-	margin-top: 20vh ;
-	padding: 10vh 10vw 10vh 10vw;
+	font-size:10px;	
 }
 
-#startUpView .col-sm-6:hover{
-	background-color: #1c1e1f;
-	color: white;
-}
 
 .tip{
 	position:  relative;
@@ -98,7 +92,6 @@ button{
 	margin: 0px;
 }
 
-
 .form-group label{
 	font-size: 14px;
 	display: inline-block;
@@ -111,26 +104,22 @@ button{
 	width: 45vw;
 	max-width: 48vw;
 }
-#controlButtons img:hover{
+#controlButtons img{
 	cursor: pointer;
 }
 
 .person{
-	padding-top: 5px;
-	border-bottom: 3px solid white;
-	border-top: 1px solid white;
-	border-right: 1px solid white;
-	border-left: 1px solid white;
+	padding: 5px 0px 5px;
+	border-bottom: 1px solid white;
 	font-size: 10px;
 	text-align: left;
 }
 .person b{
-	margin: 2px;
+	margin:1px 1px 1px 1px;
 	font-size: 7px;
 }
 .person p{
-	padding:2px;
-	margin:2px;
+	margin:1px 1px 1px 1px;
 }
 .person input{
 	margin:5px 0px 0px 2px;
@@ -138,7 +127,9 @@ button{
 	color: white;
 	text-align: center;
 	background-color: transparent;
-	border-bottom: 1px solid white;
+}
+.person hr{
+	color: white;
 }
 
 .controlPanel{

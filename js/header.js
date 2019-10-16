@@ -15,6 +15,7 @@ export {
 	videoInput,
 	startUpView,
 	setStatus,
+	setSourceName,
 }
 
 import {Person} from "./person.js"
@@ -61,9 +62,6 @@ const detectionView = document.getElementById("detectionView");
 const recognitionView = document.getElementById('recognitionView');
 const startUpView = document.getElementById("startUpView");
 
-
-
-
 // Canvas - Render Facial Dectection 
 const canvas = document.getElementById("overlay");
 var canvasContext = canvas.getContext('2d')
@@ -75,7 +73,7 @@ video.onmouseleave = () => {canvas.style.zIndex = 1000;};
 
 const statusDiv = document.getElementById("statusDiv");
 const videoDiv = document.getElementById("videoDiv");
-
+const sourceName = document.getElementById("sourceName"); var setSourceName = (name) => { sourceName.innerHTML = name}
 const controlButtons = document.getElementById("controlButtons")
 const detectButton = document.getElementById("startButton");
 const pauseDetectButton = document.getElementById("pauseButton")
@@ -130,30 +128,42 @@ enablePanel(activePanel) /// ATIVATES ACTIVE PANEL WHEN DOCUMENT IS LOADED
 video.onresize = () => {
 	canvas.width = video.offsetWidth;
 	canvas.height = video.offsetHeight;
+	//faceapi.matchDimensions(,canvas) // Resizes Canvas to video  size
 	videoDiv.width = video.offsetWidth;
 	videoDiv.height = video.offsetHeight;
+
 }
 window.onresize = () =>{video.onresize()}
 
-function openCamera(){
-	if (navigator.getUserMedia){
-		navigator.getUserMedia({video:{}},s=>{video.srcObject = s},(err) =>{console.error(err)})
-	}else if (navigator.mediaDevices.getUserMedia){
-		navigator.mediaDevices.getUserMedia({video:{}},s=>{video.srcObject=s},(err) =>{console.error(err)})
-	}else{
-		document.getElementById("content").innerHTML = `<h2 class="error">Navigator Error </h2><p>Failed to get user media ${navigator.vendor}</p>`;
-		console.info(navigator)
-		throw new Error(`Failed to get user media devices from navigator.`);
-	}
+var onSucessStream =  stream => {
+	video.removeAttribute("src");
+	video.srcObject = stream;
+	setSourceName("Web Camera")
+}
+var handleCrictalError = (error,details) =>{
+	document.body.innerHTML += `
+			<h2 class="error">${error}</h2>
+			<p> ${details}</p>`;
+
 }
 
-function cameraIniti(){
-	if (navigator){openCamera();}
+const webCamOptions = {
+	format: "mp4"
+}
+var cameraIniti = () =>{
+	if (navigator){
+		if (navigator.getUserMedia){
+			navigator.getUserMedia({video:webCamOptions},onSucessStream,(err) =>{console.error(err)})
+		}else if (navigator.mediaDevices.getUserMedia){
+			navigator.mediaDevices.getUserMedia({video:webCamOptions},onSucessStream,(err) =>{console.error(err)})
+		}else{
+			console.info(navigator)
+			handleCrictalError("Media Error", "Failed to get user media ${navigator.vendor}");
+			throw new Error(`Failed to get user media devices from navigator.`);
+		}
+	}
 	else{
-		document.getElementById("content").innerHTML = `
-			<h2 class="error">Navigator is Not Supported</h2>
-			<p>Your browser is old and have navigator module. To solve this issue, kindly upgrade your browser</p>
-			`;
+		handleCrictalError("Camera Error","Web Cameras are not supported by your browser To solve this issue, try upgrading your browser to the latest version");	
 	}
 }
 
