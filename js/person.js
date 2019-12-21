@@ -17,7 +17,7 @@ function create_UUID(){
 import { recognitionView } from "./header.js"
 
 class Person {
-	descriptors = [];
+	descriptor = [];
 
 	calculateEuclideanDistance = (descriptionIndex,targetDescriptor) => {
 		let distance = 0;
@@ -69,7 +69,6 @@ class Person {
 	}
 
 	updateDescriptors = (newDescriptor) => {
-		if(this.isDescriptorStored(descriptor)){return;}
 		this.descriptor.shift(newDescriptor)
 	};
 
