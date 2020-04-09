@@ -22,16 +22,16 @@ class Person {
 	calculateEuclideanDistance = (descriptionIndex,targetDescriptor) => {
 		let distance = 0;
 		for (var embedingIndex = 127; embedingIndex >= 0; embedingIndex--) {
-			distance += Math.pow(targetDescriptor[embedingIndex] - this.descriptor[descriptionIndex][embedingIndex],2)
+			distance += Math.pow(targetDescriptor[embedingIndex] - this.descriptors[descriptionIndex][embedingIndex],2)
 		}
 		return Math.sqrt(distance);
 	}
 	calculateAverageEuclideanDistance = async (descriptor) => {
 		let avergeDistance = 0;
-		for (var i = this.descriptor.length - 1; i >= 0; i--) {
+		for (var i = this.descriptors.length - 1; i >= 0; i--) {
 			avergeDistance += this.calculateEuclideanDistance(i,descriptor)
 		}
-		return avergeDistance/this.descriptor.length ;
+		return avergeDistance/this.descriptors.length ;
 	}
 
 	isTheSame = (descriptor,distance) =>{
@@ -57,19 +57,21 @@ class Person {
 
 	areDescriptorsEqual(descriptionIndex,targetDescriptor){
 		for (var embedingIndex = 127; embedingIndex >= 0; embedingIndex--) {
-			if(targetDescriptor[embedingIndex] != this.descriptor[descriptionIndex][embedingIndex]){return false;}
+			if(targetDescriptor[embedingIndex] != this.descriptors[descriptionIndex][embedingIndex]){return false;}
 		}
 		return true
 	}
 	isNewDescriptor = (targetDescriptor) => {
-		for (var i = this.descriptor.length - 1; i >= 0; i--) {
-			if (this.areDescriptorsEqual(i,targetDescriptor)){return false;}
+		for (var i = this.descriptors.length - 1; i >= 0; i--) {
+			if (this.areDescriptorsEqual(i,targetDescriptor)){
+				return false;
+			}
 		}
 		return true
 	}
 
 	updateDescriptors = (newDescriptor) => {
-		this.descriptor.shift(newDescriptor)
+		this.descriptors.shift(newDescriptor)
 	};
 
 
@@ -159,6 +161,7 @@ class Person {
 			 `
 	}
 	renderContent = () => {
+		if (true){return}
 		recognitionView.innerHTML += `<div id="${this.id}_div" class="col-sm-6 person"> ${this.generateContent()} </div>`;
 		this.Element = document.getElementById(this.id+"_div")
 		document.getElementById(`${this.id}`).addEventListener("keydown",(event) => {this.name  = event.srcElement.value});

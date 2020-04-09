@@ -19,6 +19,7 @@ export {
 }
 
 import {Person} from "./person.js"
+import {maxFaceLabelDistance} from "./main.js"
 var isNewPerson = (result) => {
 	for(var personID in window.people){
 		if(window.people[personID].isTheSame(result.descriptor,maxFaceLabelDistance)){

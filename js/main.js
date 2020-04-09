@@ -5,11 +5,11 @@ import { resultParser } from "./result_parser.js"
 import { SSD_MOBILE_NET,MTCNN,TINY_FACE_DECTECTOR,modelOptions} from "./model_options.js"
 
 const MODELS_DIRECTORY = '/js/vendor/face-api.js/weights/';
+export let maxFaceLabelDistance = 0.4; // Maxiuim Euclidean Distance between two different face labels
 
 
-var currentFaceDectetionModel = TINY_FACE_DECTECTOR;
+var currentFaceDectetionModel = SSD_MOBILE_NET;
 
-let maxFaceLabelDistance = 0.4; // Maxiuim Euclidean Distance between two different face labels
 let runningFaceDectection = false;
 let isRecongizingFaces = true;
 let isDectectingExpressions = true;
@@ -104,34 +104,34 @@ var getFaceDectections = async (callback) =>{
 			.withAgeAndGender().then(results => callback(results));
 			
 	// TWO
-	}else if ((isDectectingExpressions && isRecongizingFaces) && !isDectectingAgeAndGender){
+	}else if (isDectectingExpressions && isRecongizingFaces && !isDectectingAgeAndGender){
 		await faceapi.detectAllFaces(video,modelOptions[currentFaceDectetionModel])
 			.withFaceExpressions()
 			.withFaceLandmarks()
 			.withFaceDescriptors().then(results => callback(results));
 
-	}else if((isDectectingAgeAndGender && isRecongizingFaces) && !isDectectingExpressions){
+	}else if(isDectectingAgeAndGender && isRecongizingFaces && !isDectectingExpressions){
 		await faceapi.detectAllFaces(video,modelOptions[currentFaceDectetionModel])
 			.withAgeAndGender()
 			.withFaceLandmarks()
 			.withFaceDescriptors().then(results => callback(results));
 
-	}else if((isDectectingExpressions && isDectectingAgeAndGender) && !isRecongizingFaces){
+	}else if(isDectectingExpressions && isDectectingAgeAndGender && !isRecongizingFaces){
 		await faceapi.detectAllFaces(video,modelOptions[currentFaceDectetionModel])
 			.withFaceLandmarks()
 			.withFaceDescriptors()
 			.withFaceExpressions().then(results => callback(results));
 
 	// ONE 
-	}else if (isDectectingExpressions && !(isRecongizingFaces || isDectectingAgeAndGender)){
+	}else if (isDectectingExpressions && !isRecongizingFaces && !isDectectingAgeAndGender){
 		await faceapi.detectAllFaces(video,modelOptions[currentFaceDectetionModel])
 			.withFaceExpressions();
 
-	}else if(isDectectingAgeAndGender && !(isRecongizingFaces || isDectectingExpressions)){
+	}else if(isDectectingAgeAndGender && !isRecongizingFaces && !isDectectingExpressions){
 		await faceapi.detectAllFaces(video,options)
 			.withAgeAndGender().then(results => callback(results));
 
-	}else if(isRecongizingFaces && !(isDectectingAgeAndGender || isDectectingExpressions)){
+	}else if(isRecongizingFaces && !isDectectingAgeAndGender && !isDectectingExpressions){
 		await faceapi.detectAllFaces(video,modelOptions[currentFaceDectetionModel])
 			.withFaceLandmarks()
 			.withFaceDescriptors().then(results => callback(results));
@@ -322,7 +322,7 @@ var initDectetion =  () => {
 var init = () =>{
 	setStatus("Initalizing Appilcation...", "info");
 	renderModels();
-	loadModels().then(() => {setStatus("Models Loaded. Awaiting Video...", "success");});
+	loadModels().then(() => {setStatus("Models Loaded. Awaiting Video Feed...", "success");});
 }
 
 

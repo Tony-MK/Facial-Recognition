@@ -66,6 +66,12 @@
 						<span> Reset Dectections </span>
 					</div>
 
+					<div class="tip" id="addPerson">
+						<img class="img-fluid" src="icons8/add-male-user-50.png" alt="add-image">
+						<input type="file" accept="image/*" hidden="" id="imageInput">
+						<span> Add a Person to Recongize </span>
+					</div>
+
 					<div class="tip" id="videoUpload">
 						<img class="img-fluid" src="icons8/video-playlist-50.png" alt="add-image">
 						<input type="file" accept="video/.mp4 .ogg" hidden="" id="videoInput">
@@ -77,14 +83,10 @@
 						<span> Switch to Live Camera Feed </span>
 					</div>
 
-					<div class="tip" id="addPerson">
-						<img class="img-fluid" src="icons8/add-male-user-50.png" alt="add-image">
-						<input type="file" accept="image/*" hidden="" id="imageInput">
-						<span> Add a Person to Recongize </span>
-					</div>
+					
 				</div>
 			</div>
-			<div class="controlPanel">
+			<div class="panel controlPanel" id="controlPanel">
 				<div>
 					<ul class="nav row">
 						 <li id="detectionButton">
@@ -170,9 +172,9 @@
 	</section>
 </body>
 
-<script src="/js/vendor/bootstrap-4.3.1/bootstrap.min.js"></script>
 <script src="/js/vendor/jquery-3.4.1.js" type="text/javascript"></script>
-<script src="/js/vendor/face-api.js/face-api.js" type="text/javascript"></script>
+<script src="/js/vendor/bootstrap-4.3.1/bootstrap.min.js"></script>
+<script src="/js/vendor/face-api.js/face-api.min.js" type="text/javascript"></script>
 <script src="/js/main.js" type="module"></script>
 
 
