@@ -5,7 +5,7 @@ import { resultParser } from "./result_parser.js"
 import { SSD_MOBILE_NET,MTCNN,TINY_FACE_DECTECTOR,modelOptions} from "./model_options.js"
 
 const MODELS_DIRECTORY = '/js/vendor/face-api.js/weights/';
-export let maxFaceLabelDistance = 0.4; // Maxiuim Euclidean Distance between two different face labels
+export let maxFaceLabelDistance = 0.25; // Maxiuim Euclidean Distance between two different face labels
 
 
 var currentFaceDectetionModel = SSD_MOBILE_NET;
