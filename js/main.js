@@ -328,7 +328,7 @@ var setDectectionToContentHTML = (face,result) =>{
 
 var loadModels = async() => {
 	setStatus("Loading Models....", "info")
-	await faceapi.loadMtcnnModel(MODELS_DIRECTORY).then(()=>{setStatus("Successfully Loaded MCTNN Model","success")});
+	//await faceapi.loadMtcnnModel(MODELS_DIRECTORY).then(()=>{setStatus("Successfully Loaded MCTNN Model","success")});
 	await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODELS_DIRECTORY).then(()=>{setStatus("Successfully Loaded Tiny Face Landmark Model","success")});
 	await faceapi.loadSsdMobilenetv1Model(MODELS_DIRECTORY).then(()=>{setStatus("Successfully Loaded SSD Moblie Net Model`","success")});
 	await faceapi.loadFaceLandmarkModel(MODELS_DIRECTORY).then(()=>{setStatus("Successfully Loaded Face Landmark Model","success")});
