@@ -269,9 +269,9 @@ async function renderResults(results){
 	const faces = await faceapi.extractFaces(video,results.map((res) => res.detection))
 
 
-	faceapi.resizeResults(results, canvas).forEach((result,index) => {
+	faceapi.resizeResults(results, canvas).forEach(async (result,index) => {
 
-		displayResult(result)
+		await displayResult(result)
 
 
 		if (isRecongizingFaces){
