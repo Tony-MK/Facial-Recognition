@@ -5,7 +5,7 @@ import { resultParser } from "./result_parser.js"
 import { SSD_MOBILE_NET,MTCNN,TINY_FACE_DECTECTOR,modelOptions} from "./model_options.js"
 
 const MODELS_DIRECTORY = '/js/vendor/face-api.js/weights/';
-export let maxFaceLabelDistance = 1; // Maxiuim Euclidean Distance between two different face labels
+export let maxFaceLabelDistance = 0.4; // Maxiuim Euclidean Distance between two different face labels
 
 
 var currentFaceDectetionModel = SSD_MOBILE_NET;
@@ -328,7 +328,7 @@ var setDectectionToContentHTML = (face,result) =>{
 
 var loadModels = async() => {
 	setStatus("Loading Models....", "info")
-	//await faceapi.loadMtcnnModel(MODELS_DIRECTORY).then(()=>{setStatus("Successfully Loaded MCTNN Model","success")});
+	await faceapi.loadMtcnnModel(MODELS_DIRECTORY).then(()=>{setStatus("Successfully Loaded MCTNN Model","success")});
 	await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODELS_DIRECTORY).then(()=>{setStatus("Successfully Loaded Tiny Face Landmark Model","success")});
 	await faceapi.loadSsdMobilenetv1Model(MODELS_DIRECTORY).then(()=>{setStatus("Successfully Loaded SSD Moblie Net Model`","success")});
 	await faceapi.loadFaceLandmarkModel(MODELS_DIRECTORY).then(()=>{setStatus("Successfully Loaded Face Landmark Model","success")});
