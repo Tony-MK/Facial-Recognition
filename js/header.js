@@ -182,7 +182,10 @@ var handleCrictalError = (error,details) =>{
 }
 
 const webCamOptions = {
-	format: "mp4"
+	format: "mp4",
+	frameRate: 10,
+	facingMode: 'user',
+
 }
 var cameraIniti = () =>{
 	if (navigator){
