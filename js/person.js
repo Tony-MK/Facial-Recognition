@@ -19,23 +19,23 @@ import { recognitionView } from "./header.js"
 class Person {
 	descriptors = [];
 
-	calculateEuclideanDistance = (descriptionIndex,targetDescriptor) => {
+	calculateEuclideanDistance = (descriptiorIndex,targetDescriptor) => {
 		let distance = 0;
-		for (var embedingIndex = 127; embedingIndex >= 0; embedingIndex--) {
-			distance += Math.pow(targetDescriptor[embedingIndex] - this.descriptors[descriptionIndex][embedingIndex],2)
+		for (var index = 127; index >= 0; index--) {
+			distance += Math.pow(targetDescriptor[index] - this.descriptors[descriptiorIndex][index],2)
 		}
 		return Math.sqrt(distance);
 	}
-	calculateAverageEuclideanDistance = async (descriptor) => {
-		let avergeDistance = 0;
-		for (var i = this.descriptors.length - 1; i >= 0; i--) {
-			avergeDistance += this.calculateEuclideanDistance(i,descriptor)
+	calculateAverageEuclideanDistance = (descriptor) => {
+		let totalDistance = 0;
+		for (var index = 0; index < this.descriptors.length; index++) {
+			totalDistance += this.calculateEuclideanDistance(index,descriptor)
 		}
-		return avergeDistance/this.descriptors.length ;
+		return totalDistance/this.descriptors.length ;
 	}
 
 	isTheSame = (descriptor,distance) =>{
-		return this.calculateEuclideanDistance(descriptor) < distance
+		return this.calculateAverageEuclideanDistance(descriptor) < distance
 	}
 
 	updateAge = (age) => {
@@ -71,7 +71,7 @@ class Person {
 	}
 
 	updateDescriptors = (newDescriptor) => {
-		this.descriptors.shift(newDescriptor)
+		this.descriptors.push(newDescriptor)
 	};
 
 
@@ -161,7 +161,6 @@ class Person {
 			 `
 	}
 	renderContent = () => {
-		if (true){return}
 		recognitionView.innerHTML += `<div id="${this.id}_div" class="col-sm-6 person"> ${this.generateContent()} </div>`;
 		this.Element = document.getElementById(this.id+"_div")
 		document.getElementById(`${this.id}`).addEventListener("keydown",(event) => {this.name  = event.srcElement.value});
@@ -184,10 +183,13 @@ class Person {
 	}
 
 	constructor(name,image,age,descriptor,expressions,gender,genderProbability){
-		if (image !== undefined){
-			this.generateDescription(image);
-		}
-		if(descriptor !== undefined){
+		if (descriptor === undefined){
+			if (image !== undefined ){
+				this.generateDescription(image);
+			}else{
+				throw new Error("Person needs an Image for descriptor") 
+			}
+		}else{
 			this.updateDescriptors(descriptor)
 		}
 

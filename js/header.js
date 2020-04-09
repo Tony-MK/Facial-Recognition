@@ -32,14 +32,34 @@ var isNewPerson = (result) => {
 
 
 var createPerson = (result,face) => {
-	if(isNewPerson(result)){
-		const faceImage = document.createElement("img")
-		faceImage.src = face.toDataURL("image/png");
-		const person = new Person("Unknown",faceImage,result.age,result.descriptor,result.expressions,result.gender,result.genderProbability)
-		window.people[person.id] = person;
+	if(!isNewPerson(result)){
+		setStatus("Person Already Created","error")
+		return
 	}
+	var faceImage = document.createElement("img")
+	faceImage.src = face.toDataURL("image/png");
+
+	let person = new Person(
+		"Unknown",
+		faceImage,
+		result.age,
+		result.descriptor,
+		result.expressions,
+		result.gender,
+		result.genderProbability
+	)
+
+	person.renderContent()
+	window.people[person.id] = person;
+	setStatus("Created Person","success")
+	
+
 }
+
+
 var createPeopleFromImageFile = async (image_file) =>{
+
+	setStatus("Creating Person...","info")
 
 	let image = document.createElement("img")
 	image.src = URL.createObjectURL(image_file);
@@ -50,8 +70,20 @@ var createPeopleFromImageFile = async (image_file) =>{
 		.withFaceDescriptors()
 		.withAgeAndGender()
 
-	const faces = await faceapi.extractFaces(image,results.map((res) => res.detection));
-	results.forEach((result,index) => {createPerson(index,faces[index])})
+	setStatus(`Found ${results.length} Faces`,"info")
+
+	if (results.length === 0){
+		setStatus("Can't find any faces","error")
+	}else{
+		const faces = await faceapi.extractFaces(image,results.map((res) => res.detection));
+		results.forEach((result,index) => {
+			createPerson(index,faces[index]);
+
+		})
+	}
+
+	
+
 		
 }
 

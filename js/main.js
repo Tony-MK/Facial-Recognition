@@ -5,7 +5,7 @@ import { resultParser } from "./result_parser.js"
 import { SSD_MOBILE_NET,MTCNN,TINY_FACE_DECTECTOR,modelOptions} from "./model_options.js"
 
 const MODELS_DIRECTORY = '/js/vendor/face-api.js/weights/';
-export let maxFaceLabelDistance = 0.4; // Maxiuim Euclidean Distance between two different face labels
+export let maxFaceLabelDistance = 1; // Maxiuim Euclidean Distance between two different face labels
 
 
 var currentFaceDectetionModel = SSD_MOBILE_NET;
@@ -150,16 +150,19 @@ video.addEventListener("timeupdate",() => {
 
 
 function findBestMatch(descriptor,callback){
-	let bestMatch,nMatches = 0;
+	let bestMatch = undefined
+	let nMatches = 0;
 	for(var personID in window.people){
+		console.log(personID)
 		const distance = window.people[personID].calculateAverageEuclideanDistance(descriptor);
+		console.info("Distance:", distance,maxFaceLabelDistance)
 		if (distance < maxFaceLabelDistance){
 			nMatches+= 1;
 			if (bestMatch === undefined){
 				bestMatch = {"person":window.people[personID],"distance":distance};
 				continue;
 			}
-			if(bestMatch.distance < dist){
+			if(bestMatch.distance < distance){
 				bestMatch = {"person":window.people[personID],"distance":distance}
 			};
 			console.warning("Found ",nMatches," Face Matches with distance for ",distance, ". Best Match :",bestMatch.person.name);
@@ -181,32 +184,60 @@ function validateResults(results){
 	return true
 }
 
+async function renderResultAsSentence(result,rParser) {
+	// Rendering Detection Details as Sentence
+	await new faceapi.draw.DrawTextField([
+		`${result.personName === undefined ? "":result.personName+` (${Math.round(computeDistanceDifferencePercentage(result.euclideanDistance))} %)`}
+			${result.age === undefined? "": rParser.parseAge()+"year old ("+rParser.parseBirthDate()+")"} 
+			${rParser.parseExpression()} ${rParser.parseGender()}`
+		],
+		result.detection.box.bottomLeft,
+		boxOptions
+	).draw(canvas);
+}
+
+
+function computeDistanceDifferencePercentage(distance){
+	return (distance/maxFaceLabelDistance)*100
+
+}
 async function displayResult(result){
+
+
+	let boxOptions = {color:"red"}
+	if (result.personName !== undefined && result.personName !== "Unknown" ){
+		boxOptions.color = "blue"
+  	}
+
 	// Drawing Box around Faces
-	await new faceapi.draw.DrawBox(result.detection.box,{color:"blue"}).draw(canvas);
+	await new faceapi.draw.DrawBox(
+		result.detection.box,
+		boxOptions
+	).draw(canvas);
    	
+   	//Rendering Confidence
+
    	if (renderConfidence){
-   		//Rendering Confidence
-   		await new faceapi.draw.DrawTextField([`${faceapi.round(result.detection.classScore*100)} %`],result.detection.box.topRight,{color:"blue"}).draw(canvas);
+   		
+   		await new faceapi.draw.DrawTextField(
+   			[`${faceapi.round(result.detection.classScore*100)} %`],
+   			result.detection.box.topRight,
+   			boxOptions,
+   		).draw(canvas);
   	 }
 
-	// Rendering Detection Details
-	let textArray,rParser = new resultParser(result)
-	if (renderSentence){
-		await new faceapi.draw.DrawTextField([
-			`${result.personName === undefined ? "":result.personName+` (${Math.round(result.euclideanDistance* 100) /100}) is a`}
-				${result.age === undefined? "": rParser.parseAge()+"year old ("+rParser.parseBirthDate()+")"} 
-				${rParser.parseExpression()} ${rParser.parseGender()}`
-			],
-			result.detection.box.bottomLeft,
-			{color:"blue"}
-		).draw(canvas);
-		return;
 
+	
+	let rParser = new resultParser(result)
+	if (renderSentence){
+		renderResultAsSentence(result,rParser)
+		return
 	}
-	textArray = [];
+
+
+	let textArray = [];
 	if (result.personName !== undefined){
-		textArray.push(`NAME:${result.personName} (${Math.round(result.euclideanDistance* 100) /100})`);
+		textArray.push(`NAME:${result.personName} (${faceapi.round(computeDistanceDifferencePercentage(result.euclideanDistance))} %)`);
 	}
 	if(result.age !== undefined){
 		textArray.push(`AGE: ${rParser.parseAge()} (${rParser.parseBirthDate()})`);
@@ -217,7 +248,12 @@ async function displayResult(result){
 	if (result.gender !== undefined){
 		textArray.push(`GENDER: ${rParser.parseGender()}`);
 	}
-	await new faceapi.draw.DrawTextField(textArray,result.detection.box.topLeft,{color:"blue"}).draw(canvas);
+
+	await new faceapi.draw.DrawTextField(
+		textArray,
+		result.detection.box.topLeft,
+		boxOptions
+	).draw(canvas);
 }
 
 var parseSeconds = (seconds) => {
@@ -226,46 +262,44 @@ var parseSeconds = (seconds) => {
 }
 async function renderResults(results){
 	clearCanvas();
-	if (!validateResults(results)){return}
-
-
-	let faces = undefined;
-	if (isExtractingFaces){
-		faces = await faceapi.extractFaces(video,results.map((res) => res.detection))
-		if (faces.length > 0){
-			detectionView.innerHTML += `
-						<button class="row" data-target="#T_${video.currentTime*10000}" data-toggle="collapse" >${parseSeconds(video.currentTime)} </button>
-						<div class="row collapse" id="T_${video.currentTime*10000}">
-						`
-
-		}
+	if (!validateResults(results)){
+		return
 	}
 
+	const faces = await faceapi.extractFaces(video,results.map((res) => res.detection))
 
 
 	faceapi.resizeResults(results, canvas).forEach((result,index) => {
+
+		displayResult(result)
+
+
 		if (isRecongizingFaces){
+
 			const match = findBestMatch(result.descriptor);
 			if (match !== undefined){
 				match.person.update(result);
-
-				if (renderOnCanvas){
-					result.euclideanDistance = match.distance;
-					result.gender = match.person.getGender();
-					result.genderProbability = match.person[result.gender]
-					result.age = match.person.age;
-					result.personName = match.person.name;
-					displayResult(result);
-				}
-
-				if (isExtractingFaces){setDectectionToContentHTML(faces[index],result)}; 
-				if (faces.length === index+1){detectionView.innerHTML += "</div>"}
-				return;
+				result.euclideanDistance = match.distance;
+				result.gender = match.person.getGender();
+				result.genderProbability = match.person[result.gender]
+				result.age = match.person.age;
+				result.personName = match.person.name;
 			}
 		}
-		if (renderOnCanvas){displayResult(result)}
-		if (isExtractingFaces){setDectectionToContentHTML(faces[index],result)}; 
-		if (faces.length === index+1){detectionView.innerHTML += "</div>"}
+
+		
+
+		if (isExtractingFaces){
+
+			if (index === 0){
+				detectionView.innerHTML = ""
+			}
+
+			setDectectionToContentHTML(faces[index],result)
+		};
+
+		
+		
 		return;
 	
 
@@ -292,20 +326,15 @@ var setDectectionToContentHTML = (face,result) =>{
 	 	</div>`
 }
 
-var renderModels = () =>{
-	for (var net in faceapi.nets){
-		console.info(net+":",faceapi.nets[net]);
-	}
-}
-
 var loadModels = async() => {
-	await faceapi.loadMtcnnModel(MODELS_DIRECTORY).then(()=>{setStatus(`Successfully Loaded MCTNN Model `,"success")});
-	await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODELS_DIRECTORY);
-	await faceapi.loadSsdMobilenetv1Model(MODELS_DIRECTORY).then(()=>{setStatus(`Successfully Loaded SSD Moblie Net Model `,"success")});
-	await faceapi.loadFaceLandmarkModel(MODELS_DIRECTORY).then(()=>{setStatus(`Successfully Loaded Face Landmark Model `,"success")});
-	await faceapi.loadFaceRecognitionModel(MODELS_DIRECTORY).then(()=>{setStatus(`Successfully Loaded Face Recongition Model `,"success")});
-	await faceapi.loadFaceExpressionModel(MODELS_DIRECTORY).then(()=>{setStatus(`Successfully Loaded Face Expression Model `,"success")});
-	await faceapi.nets.ageGenderNet.load(MODELS_DIRECTORY).then(()=>{setStatus(`Successfully Loaded Age and Gender Model `,"success")});
+	setStatus("Loading Models....", "info")
+	await faceapi.loadMtcnnModel(MODELS_DIRECTORY).then(()=>{setStatus("Successfully Loaded MCTNN Model","success")});
+	await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODELS_DIRECTORY).then(()=>{setStatus("Successfully Loaded Tiny Face Landmark Model","success")});
+	await faceapi.loadSsdMobilenetv1Model(MODELS_DIRECTORY).then(()=>{setStatus("Successfully Loaded SSD Moblie Net Model`","success")});
+	await faceapi.loadFaceLandmarkModel(MODELS_DIRECTORY).then(()=>{setStatus("Successfully Loaded Face Landmark Model","success")});
+	await faceapi.loadFaceRecognitionModel(MODELS_DIRECTORY).then(()=>{setStatus("Successfully Loaded Face Recongition Model","success")});
+	await faceapi.loadFaceExpressionModel(MODELS_DIRECTORY).then(()=>{setStatus("Successfully Loaded Face Expression Model","success")});
+	await faceapi.nets.ageGenderNet.load(MODELS_DIRECTORY).then(()=>{setStatus("Successfully Loaded Age and Gender Model","success")});
 }
 	
 var initDectetion =  () => {
@@ -320,9 +349,10 @@ var initDectetion =  () => {
 }
 
 var init = () =>{
-	setStatus("Initalizing Appilcation...", "info");
-	renderModels();
-	loadModels().then(() => {setStatus("Models Loaded. Awaiting Video Feed...", "success");});
+	setStatus("Initalizing App...", "info");
+	loadModels().then(() => {
+		setStatus("App Successfully Loaded","success");
+	});
 }
 
 
