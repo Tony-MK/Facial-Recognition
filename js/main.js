@@ -5,7 +5,7 @@ import { resultParser } from "./result_parser.js"
 import { SSD_MOBILE_NET,MTCNN,TINY_FACE_DECTECTOR,modelOptions} from "./model_options.js"
 
 const MODELS_DIRECTORY = '/js/vendor/face-api.js/weights/';
-export let maxFaceLabelDistance = 0.25; // Maxiuim Euclidean Distance between two different face labels
+export let maxFaceLabelDistance = 0.4; // Maxiuim Euclidean Distance between two different face labels
 
 
 var currentFaceDectetionModel = SSD_MOBILE_NET;
@@ -153,7 +153,6 @@ function findBestMatch(descriptor,callback){
 	let bestMatch = undefined
 	let nMatches = 0;
 	for(var personID in window.people){
-		console.log(personID)
 		const distance = window.people[personID].calculateAverageEuclideanDistance(descriptor);
 		console.info("Distance:", distance,maxFaceLabelDistance)
 		if (distance < maxFaceLabelDistance){
