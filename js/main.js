@@ -6,6 +6,7 @@ import { SSD_MOBILE_NET,MTCNN,TINY_FACE_DECTECTOR,modelOptions} from "./model_op
 
 const MODELS_DIRECTORY = '/js/vendor/face-api.js/weights/';
 
+
 var currentFaceDectetionModel = TINY_FACE_DECTECTOR;
 
 let maxFaceLabelDistance = 0.4; // Maxiuim Euclidean Distance between two different face labels

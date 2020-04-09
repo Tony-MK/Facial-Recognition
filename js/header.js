@@ -73,7 +73,8 @@ video.onmouseleave = () => {canvas.style.zIndex = 1000;};
 
 const statusDiv = document.getElementById("statusDiv");
 const videoDiv = document.getElementById("videoDiv");
-const sourceName = document.getElementById("sourceName"); var setSourceName = (name) => { sourceName.innerHTML = name}
+const sourceName = document.getElementById("sourceName"); 
+var setSourceName = (name) => { sourceName.innerHTML = name}
 const controlButtons = document.getElementById("controlButtons")
 const detectButton = document.getElementById("startButton");
 const pauseDetectButton = document.getElementById("pauseButton")
