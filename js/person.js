@@ -166,7 +166,7 @@ class Person {
 		document.getElementById(`${this.id}`).addEventListener("keydown",(event) => {this.name  = event.srcElement.value});
 	}
 	update(result){
-		if (result.descriptor !== undefined){this.updateDescriptors(result.descriptor)}
+		//if (result.descriptor !== undefined){this.updateDescriptors(result.descriptor)}
 		if (result.gender !== undefined){this.updateGender(result.gender,result.genderProbability);}
 		if (result.age !== undefined){this.updateAge(result.age);}
 		if (result.expressions !== undefined){this.updateExpressions(result.experssions);}
