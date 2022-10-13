@@ -27,13 +27,13 @@
 		<div class="row">
 			<div class="col-md-1"></div>
 			<div class="col-md-4 startUpOption" id="videoSelect">
-				<img class="img-fluid" src="icons8/video-playlist-500.png" alt="add-image"/>
+				<img class="img-fluid" src="./icons8/video-playlist-500.png" alt="add-image"/>
 				<span> Video </span>
 				<p> Upload a .mp4, .ogg, .mkv video clip.</p>
 			</div>
 			<div class="col-md-2"></div>
 			<div class="col-md-4 startUpOption" id="webcamSelect">
-				<img class="img-fluid" src="icons8/camera-500.png" alt="add-image"/>
+				<img class="img-fluid" src="./icons8/camera-500.png" alt="add-image"/>
 				<span>Camera</span>
 				<p> Take live feed from the camera. </p>
 			</div>
@@ -52,34 +52,34 @@
 				<video class="img-fluid" id="playback" autoplay="true" controls></video>
 				<div id="controlButtons">
 					<div class="tip" id="startButton">
-						<img class="img-fluid" src="icons8/play-50.png" alt="add-image">
+						<img class="img-fluid" src="./icons8/play-50.png" alt="add-image">
 						<span> Start Detecting Faces </span>
 					</div>
 
 					<div hidden="true" class="tip" id="pauseButton">
-						<img class="img-fluid" src="icons8/pause-50.png" alt="add-image">
+						<img class="img-fluid" src="./icons8/pause-50.png" alt="pause-image">
 						<span> Pause Detecting Faces </span>
 					</div>
 
 					<div class="tip" id="clearButton">
-						<img class="img-fluid" src="icons8/refresh-50.png" alt="add-image">
+						<img class="img-fluid" src="./icons8/refresh-50.png" alt="refresh-image">
 						<span> Reset Dectections </span>
 					</div>
 
 					<div class="tip" id="addPerson">
-						<img class="img-fluid" src="icons8/add-male-user-50.png" alt="add-image">
+						<img class="img-fluid" src="./icons8/add-male-user-50.png" alt="add-image">
 						<input type="file" accept="image/*" hidden="" id="imageInput">
 						<span> Add a Person to Recongize </span>
 					</div>
 
 					<div class="tip" id="videoUpload">
-						<img class="img-fluid" src="icons8/video-playlist-50.png" alt="add-image">
+						<img class="img-fluid" src="./icons8/video-playlist-50.png" alt="video-image">
 						<input type="file" accept="video/.mp4 .ogg" hidden="" id="videoInput">
 						<span> Upload Video To Analyze </span>
 					</div>
 
 					<div class="tip" id="webCamButton">
-						<img class="img-fluid" src="icons8/camera-50.png" alt="add-image">
+						<img class="img-fluid" src="./icons8/camera-50.png" alt="camera-image">
 						<span> Switch to Live Camera Feed </span>
 					</div>
 
@@ -122,18 +122,15 @@
 					<hr>
 				</div>
 				
-
 				<div class="panel" hidden="true" id="detectionPanel">
 					<div id="detectionView"></div>
 				</div>
-
 
 				<div class="panel" hidden="true" id="recongitionPanel">
 					<div id="recognitionView"></div>	
 				</div>
 
 				<div class="panel" hidden="true" id="settingsPanel">
-
 					<div class="form-group">
 						<label for="expressionSetting" > Dectect Facial Expressions </label>
 						<input class="btn-primary" checked type="checkbox" name="expressionSetting"/>
@@ -171,11 +168,8 @@
 		</div>
 	</section>
 </body>
-
-<script src="js/vendor/jquery-3.4.1.js" type="text/javascript"></script>
-<script src="js/vendor/bootstrap-4.3.1/bootstrap.min.js"></script>
-<script src="js/vendor/face-api.js/face-api.min.js" type="text/javascript"></script>
-<script src="js/main.js" type="module"></script>
-
-
+<script src="./js/vendor/jquery-3.4.1.js" type="text/javascript"></script>
+<script src="./js/vendor/bootstrap-4.3.1/bootstrap.min.js"></script>
+<script src="./js/vendor/face-api.js/face-api.min.js" type="text/javascript"></script>
+<script src="./js/main.js" type="module"></script>
 </html>
