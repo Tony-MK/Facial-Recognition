@@ -15,9 +15,9 @@ var modelOptions = {
 
 
 	TINY_FACE_DECTECTOR : new faceapi.TinyFaceDetectorOptions({
-		 // the smaller the faster but less precise in detecting smaller faces, must be divisibleby 32, common sizes are 128, 160, 224, 320, 416, 512, 608.
-		 //  For face tracking via webcam,I would recommend using smaller sizes, e.g. 128, 160, for detecting smaller faces use larger sizes, e.g. 512, 608
-		  inputSize: 416,// size at which image is processed - default: 416 ( )
+		 // The smaller the faster but less precise in detecting smaller faces, must be divisible by 32, common sizes are 128, 160, 224, 320, 416, 512, 608.
+		 // For face tracking via webcam,I would recommend using smaller sizes, e.g. 128, 160, for detecting smaller faces use larger sizes, e.g. 512, 608
+		  inputSize: 416,// size at which image is processed - default: 416
 		  scoreThreshold: 0.5, //  minimum confidence threshold -  default: 0.5
 	}),
 
