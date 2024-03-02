@@ -1,6 +1,7 @@
-# Facial-Recognition
+# [Facial-Recognition](https://tony-mk.github.io/Facial-Recognition)
 
 A simple web application for recognizing people's faces.
-It can also predict a person's current age, emotions, and gender.
 
-Try it out: https://tony-mk.github.io/Facial-Recognition/
+As well as predicting a person's age, emotions, and gender.
+
+Link: https://tony-mk.github.io/Facial-Recognition/
